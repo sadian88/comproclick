@@ -1,7 +1,9 @@
+
 import type { ProjectData } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import GlassCard from "@/components/ui/GlassCard";
 import { CheckCircle, MessageSquare, ArrowLeft } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface SummarySectionProps {
   projectData: ProjectData;
@@ -88,6 +90,8 @@ export default function SummarySection({ projectData, onPrev, onClearData }: Sum
     const message = generateWhatsAppMessage();
     const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${message}`;
     window.open(url, "_blank");
+    // Optionally, clear data after sending or navigate away
+    // onClearData(); 
   };
 
   const displayOrder: (keyof ProjectData)[] = [
