@@ -9,7 +9,7 @@ import HeroSection from "@/components/sections/HeroSection";
 import ProjectDesignerSection from "@/components/sections/ProjectDesignerSection";
 import ContactFormSection from "@/components/sections/ContactFormSection"; // Will be for PersonalData
 import RequestPocketSection from "@/components/sections/RequestPocketSection"; // Was SummarySection
-import SuccessStoriesSection from "@/components/sections/SuccessStoriesSection"; // Added import
+import SuccessStoriesSection from "@/components/sections/SuccessStoriesSection";
 import type { PersonalData, ProjectPocketItem, StepKey } from "@/lib/types";
 import { initialPersonalData, initialProjectPocketItem } from "@/lib/types";
 import useLocalStorage from "@/hooks/useLocalStorage";
@@ -34,7 +34,6 @@ export default function Home() {
       const hasUnsavedProjectData = Object.values(currentProjectData).some(val => val && String(val).trim() !== '');
       const hasPersonalData = Object.values(personalData).some(val => val && String(val).trim() !== '');
       
-      // Warn if trying to leave during project design or if personal details form has data but no projects yet
       if ( (currentStep === 'projectDesigner' && hasUnsavedProjectData) || 
            (currentStep === 'personalDetails' && hasPersonalData && projectPocket.length === 0) ) {
         event.preventDefault();
@@ -60,10 +59,10 @@ export default function Home() {
   const addCurrentProjectToPocket = () => {
     const newProject: ProjectPocketItem = {
       ...currentProjectData,
-      id: new Date().toISOString() + Math.random().toString(36).substring(2, 9), // Simple unique ID
+      id: new Date().toISOString() + Math.random().toString(36).substring(2, 9),
     };
     setProjectPocket((prevPocket) => [...prevPocket, newProject]);
-    setCurrentProjectData(initialProjectPocketItem); // Reset for next project
+    setCurrentProjectData(initialProjectPocketItem); 
     navigateTo("requestPocket");
   };
   
@@ -72,6 +71,10 @@ export default function Home() {
     setProjectPocket([]);
     setCurrentProjectData(initialProjectPocketItem);
     setCurrentStep("hero");
+    if (typeof window !== 'undefined') {
+      window.localStorage.removeItem("comproClickUserContact");
+      window.localStorage.removeItem("comproClickProjectPocket");
+    }
   };
 
   const removeProjectFromPocket = (projectId: string) => {
@@ -84,15 +87,12 @@ export default function Home() {
   };
 
   const resetToHero = () => {
-    // Decide if clearing data is appropriate when clicking logo, or just go to hero
-    // For now, just go to hero, data persists.
     setCurrentStep("hero");
     window.scrollTo(0, 0);
   };
 
-  // Determine if personal details have been filled enough to proceed
   const arePersonalDetailsFilled = () => {
-    return personalData.fullName && personalData.email; // Basic check
+    return personalData.fullName && personalData.email; 
   };
 
   const handleStartDesigning = () => {
@@ -111,11 +111,11 @@ export default function Home() {
         aria-hidden="true"
       />
       <div
-        className="fixed -z-10 bottom-[-20%] left-[-20%] w-[60vw] h-[60vw] rounded-full bg-[hsl(var(--color-azul-cielo-suave)/0.1)] filter blur-3xl"
+        className="fixed -z-10 bottom-[-20%] left-[-20%] w-[60vw] h-[60vw] rounded-full bg-[hsl(var(--color-lila-pastel)/0.1)] filter blur-3xl"
         aria-hidden="true"
       />
        <div
-        className="fixed -z-10 top-[10%] left-[5%] w-[40vw] h-[40vw] rounded-full bg-[hsl(var(--color-lila-pastel)/0.1)] filter blur-3xl"
+        className="fixed -z-10 top-[10%] left-[5%] w-[40vw] h-[40vw] rounded-full bg-[hsl(var(--color-rosa-claro)/0.1)] filter blur-3xl"
         aria-hidden="true"
       />
 
@@ -131,9 +131,7 @@ export default function Home() {
           <ContactFormSection
             personalData={personalData}
             updatePersonalData={updatePersonalData}
-            onFormSubmit={() => navigateTo("projectDesigner")} // After contact, go to project designer
-            // No 'onPrev' from personal details if it's the first step after hero for a new user
-            // Or, onPrev could go to 'hero'
+            onFormSubmit={() => navigateTo("projectDesigner")}
             onPrev={resetToHero}
           />
         )}
@@ -141,8 +139,8 @@ export default function Home() {
           <ProjectDesignerSection 
             projectData={currentProjectData} 
             updateProjectData={updateCurrentProjectData}
-            onDesignerComplete={addCurrentProjectToPocket} // Adds to pocket and navigates
-            onBackToDesignerHome={() => navigateTo(projectPocket.length > 0 ? "requestPocket" : (arePersonalDetailsFilled() ? "projectDesigner" : "personalDetails"))} // Go to pocket or back to contact
+            onDesignerComplete={addCurrentProjectToPocket}
+            onBackToDesignerHome={() => navigateTo(projectPocket.length > 0 ? "requestPocket" : "personalDetails" )}
           />
         )}
         {currentStep === "requestPocket" && (
@@ -152,7 +150,7 @@ export default function Home() {
             onClearAllData={clearAllData}
             onAddNewProject={() => navigateTo("projectDesigner")}
             onRemoveProject={removeProjectFromPocket}
-            // onEditProject an be added later
+            onEditPersonalData={() => navigateTo("personalDetails")}
           />
         )}
       </main>

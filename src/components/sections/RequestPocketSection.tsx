@@ -1,12 +1,9 @@
 
 // src/components/sections/RequestPocketSection.tsx
-// This file is created to house the new "Bolsillo de Solicitudes" logic.
-// The content is identical to the new SummarySection.tsx content provided above.
-
 import type { PersonalData, ProjectPocketItem } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import GlassCard from "@/components/ui/GlassCard";
-import { MessageSquare, ArrowLeft, PlusCircle, Trash2, UserCircle, ListChecks } from "lucide-react";
+import { MessageSquare, PlusCircle, Trash2, UserCircle, ListChecks, Edit3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface RequestPocketSectionProps {
@@ -15,10 +12,11 @@ interface RequestPocketSectionProps {
   onClearAllData: () => void;
   onAddNewProject: () => void;
   onRemoveProject: (projectId: string) => void;
+  onEditPersonalData: () => void; // New prop
   // onEditProject: (projectId: string) => void; // Future enhancement
 }
 
-const WHATSAPP_NUMBER = "+573153042476"; // Ensure this is just numbers
+const WHATSAPP_NUMBER = "+573153042476"; 
 
 const formatPersonalLabel = (key: keyof PersonalData): string => {
   const labels: Record<keyof PersonalData, string> = {
@@ -78,6 +76,7 @@ export default function RequestPocketSection({
   onClearAllData,
   onAddNewProject,
   onRemoveProject,
+  onEditPersonalData,
 }: RequestPocketSectionProps) {
   
   const generateWhatsAppMessage = () => {
@@ -87,6 +86,8 @@ export default function RequestPocketSection({
       const value = personalData[key];
       if (value && String(value).trim() !== '') {
         message += `*${formatPersonalLabel(key)}:* ${value}\n`;
+      } else {
+        message += `*${formatPersonalLabel(key)}:* No especificado\n`;
       }
     });
     message += "\n";
@@ -118,13 +119,12 @@ export default function RequestPocketSection({
 
   const handleSendToWhatsApp = () => {
     if (!personalData.fullName || !personalData.email) {
-      alert("Por favor, completa al menos tu nombre y email en tus datos de contacto antes de enviar.");
-      // Ideally, navigate to personalDetails step or use a toast
+      // This alert is now less critical as there's a direct link, but good as a fallback.
+      // toast({ title: "Datos incompletos", description: "Por favor, completa tu nombre y email.", variant: "destructive" });
       return;
     }
     if (projectPocket.length === 0) {
-      alert("Por favor, añade al menos un proyecto a tu bolsillo antes de enviar.");
-      // Ideally, navigate to projectDesigner step or use a toast
+      // toast({ title: "Bolsillo vacío", description: "Añade al menos un proyecto.", variant: "destructive" });
       return;
     }
     const message = generateWhatsAppMessage();
@@ -132,7 +132,6 @@ export default function RequestPocketSection({
     window.open(url, "_blank");
   };
 
-  const summaryItemBaseClass = "p-4 backdrop-blur-md rounded-lg shadow-md border-0";
   const summaryItemTextClass = "text-foreground";
   const summaryItemLabelClass = "font-semibold text-primary text-sm";
 
@@ -144,7 +143,6 @@ export default function RequestPocketSection({
         <p className="text-muted-foreground mt-2">Revisa tus datos y proyectos antes de enviar.</p>
       </div>
 
-      {/* Personal Data Display */}
       <div className="mb-8 p-5 rounded-lg bg-[hsl(var(--color-blanco-puro))]/15 dark:bg-[hsl(var(--card))]/15 shadow-lg">
         <h3 className="text-xl font-semibold text-accent mb-4 flex items-center gap-2">
           <UserCircle className="w-6 h-6" /> Tus Datos de Contacto
@@ -153,28 +151,34 @@ export default function RequestPocketSection({
           {personalDataDisplayOrder.map((key) => {
             const value = personalData[key];
             return (
-              (value && String(value).trim() !== '') ? (
-                <div key={key} className="p-3 bg-[hsl(var(--background))]/20 rounded-md text-sm">
-                  <span className={cn(summaryItemLabelClass, "text-accent/90")}>{formatPersonalLabel(key)}:</span>
-                  <p className={cn(summaryItemTextClass, "whitespace-pre-wrap pt-0.5")}>{value}</p>
-                </div>
-              ) : null 
+              <div key={key} className="p-3 bg-[hsl(var(--background))]/20 rounded-md text-sm">
+                <span className={cn(summaryItemLabelClass, "text-accent/90")}>{formatPersonalLabel(key)}:</span>
+                <p className={cn(summaryItemTextClass, "whitespace-pre-wrap pt-0.5")}>
+                  {value && String(value).trim() !== '' ? value : "No especificado"}
+                </p>
+              </div>
             )
           })}
         </div>
          {(!personalData.fullName || !personalData.email) && (
-            <p className="text-sm text-destructive mt-3">Por favor, completa tu nombre y email.</p>
+            <Button 
+                variant="link" 
+                onClick={onEditPersonalData} 
+                className="text-sm text-destructive hover:text-destructive/80 mt-3 px-0 flex items-center gap-1"
+            >
+              <Edit3 className="w-3.5 h-3.5"/>
+              Por favor, completa tu nombre y email.
+            </Button>
         )}
       </div>
 
-      {/* Project Pocket Display */}
       <h3 className="text-xl font-semibold text-primary mb-4">Proyectos en tu Bolsillo ({projectPocket.length})</h3>
       {projectPocket.length === 0 ? (
         <p className="text-muted-foreground text-center py-4">Aún no has añadido proyectos a tu bolsillo.</p>
       ) : (
         <div className="space-y-6 mb-8">
           {projectPocket.map((project, index) => (
-            <div key={project.id} className={cn(summaryItemBaseClass, "bg-[hsl(var(--color-blanco-puro))]/10 dark:bg-[hsl(var(--card))]/10 relative pt-10")}>
+            <div key={project.id} className={cn("p-4 backdrop-blur-md rounded-lg shadow-md border-0", "bg-[hsl(var(--color-blanco-puro))]/5 dark:bg-[hsl(var(--card))]/5 relative pt-10")}>
               <h4 className="text-lg font-semibold text-primary mb-3 absolute top-3 left-4">Proyecto {index + 1}</h4>
               <Button 
                 variant="ghost" 
@@ -187,7 +191,7 @@ export default function RequestPocketSection({
               </Button>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2">
                 {projectDataDisplayOrder.map((key) => {
-                  const pKey = key as keyof ProjectPocketItem; // Ensure correct key type
+                  const pKey = key as keyof ProjectPocketItem; 
                   const value = project[pKey];
                   if (pKey === 'projectTypeOther' && project.projectType !== 'other') return null;
                   if (pKey === 'projectCategoryOther' && project.projectCategory !== 'other') return null;
@@ -201,8 +205,8 @@ export default function RequestPocketSection({
                 })}
                  {project.refinedIdea && project.refinedIdea.trim() !== '' && project.refinedIdea !== project.idea && (
                   <div className="py-1 md:col-span-2">
-                    <span className="font-semibold text-accent text-sm">Idea Refinada (IA):</span>
-                    <p className={cn(summaryItemTextClass, "whitespace-pre-wrap text-sm")}>{project.refinedIdea}</p>
+                    <span className={cn(summaryItemLabelClass, "text-accent")}>Idea Refinada (IA):</span>
+                    <p className={cn(summaryItemTextClass, "whitespace-pre-wrap text-sm bg-accent/10 p-2 rounded-md mt-1")}>{project.refinedIdea}</p>
                   </div>
                 )}
               </div>
@@ -233,3 +237,4 @@ export default function RequestPocketSection({
     </GlassCard>
   );
 }
+
