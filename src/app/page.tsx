@@ -36,6 +36,24 @@ export default function Home() {
     };
   }, [projectData, currentStep]);
 
+  useEffect(() => {
+    const handleMouseMove = (event: MouseEvent) => {
+      if (typeof window !== "undefined") {
+        const { clientX, clientY } = event;
+        document.documentElement.style.setProperty('--mouse-x', `${clientX}px`);
+        document.documentElement.style.setProperty('--mouse-y', `${clientY}px`);
+      }
+    };
+    if (typeof window !== "undefined") {
+      window.addEventListener('mousemove', handleMouseMove);
+    }
+    return () => {
+      if (typeof window !== "undefined") {
+        window.removeEventListener('mousemove', handleMouseMove);
+      }
+    };
+  }, []);
+
 
   const updateProjectData = (field: keyof ProjectData, value: string) => {
     setProjectData((prev) => ({ ...prev, [field]: value }));
@@ -54,8 +72,6 @@ export default function Home() {
   const resetToHero = () => {
     setCurrentStep("hero");
     window.scrollTo(0, 0);
-    // Optionally, you might want to clear projectData here too if clicking logo means "start fresh"
-    // clearProjectData(); // Uncomment if logo click should also clear all form data
   };
 
 
@@ -85,7 +101,7 @@ export default function Home() {
             projectData={projectData} 
             updateProjectData={updateProjectData}
             onDesignerComplete={() => navigateTo("contact")}
-            onBackToHero={resetToHero} // Use resetToHero for consistency
+            onBackToHero={resetToHero}
           />
         )}
         {currentStep === "contact" && (
