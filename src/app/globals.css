@@ -96,12 +96,12 @@
     /* Layered backgrounds: dynamic radial gradient on top of static linear gradient */
     background-image:
       radial-gradient(
-        1000px circle at var(--mouse-x) var(--mouse-y), /* Increased size for softer effect */
-        hsl(var(--color-lila-pastel) / 0.15), /* Subtle lilac aura */
-        hsl(var(--color-rosa-claro) / 0.1),   /* More subtle pink aura */
-        transparent 50% /* Softer falloff, starts fading at 50% of radius */
+        800px circle at var(--mouse-x) var(--mouse-y),
+        hsl(var(--color-morado-electrico) / 0.15), /* More vibrant purple, still subtle */
+        hsl(var(--color-turquesa-claro) / 0.15),   /* Distinct turquoise, still subtle */
+        transparent 60%                            /* Softer falloff, starts fading at 60% */
       ),
-      linear-gradient(135deg, hsl(var(--color-azul-cielo-super-suave)) 0%, hsl(var(--color-lila-pastel)/0.35) 50%, hsl(var(--color-rosa-claro)/0.2) 100%); /* Base static gradient, slightly softer opacities */
+      linear-gradient(135deg, hsl(var(--color-azul-cielo-super-suave)) 0%, hsl(var(--color-lila-pastel)/0.35) 50%, hsl(var(--color-rosa-claro)/0.2) 100%); /* Base static gradient */
     background-attachment: fixed, fixed; /* Both fixed */
     background-size: cover, cover; /* Ensure both cover the viewport */
     background-repeat: no-repeat, no-repeat; /* Prevent tiling */
