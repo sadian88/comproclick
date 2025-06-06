@@ -97,9 +97,9 @@
     background-image:
       radial-gradient(
         800px circle at var(--mouse-x) var(--mouse-y),
-        hsl(var(--color-morado-electrico) / 0.15), /* More vibrant purple, still subtle */
-        hsl(var(--color-turquesa-claro) / 0.15),   /* Distinct turquoise, still subtle */
-        transparent 60%                            /* Softer falloff, starts fading at 60% */
+        hsl(var(--color-morado-electrico) / 0.25), /* Increased opacity */
+        hsl(var(--color-turquesa-claro) / 0.25),   /* Increased opacity */
+        transparent 70%                            /* Larger colored area before fade */
       ),
       linear-gradient(135deg, hsl(var(--color-azul-cielo-super-suave)) 0%, hsl(var(--color-lila-pastel)/0.35) 50%, hsl(var(--color-rosa-claro)/0.2) 100%); /* Base static gradient */
     background-attachment: fixed, fixed; /* Both fixed */
