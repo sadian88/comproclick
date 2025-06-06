@@ -50,15 +50,12 @@ const formatValue = (key: keyof ProjectData, value: string | undefined): string 
 export default function SummarySection({ projectData, onPrev, onClearData }: SummarySectionProps) {
   
   const generateWhatsAppMessage = () => {
-    let message = "Hola IA Digital Designs 👋, estoy interesado en un proyecto:\n\n";
+    let message = "Hola Compro.click 👋, estoy interesado en un proyecto:\n\n";
     
-    // Define the order and fields to include in the message
     const fieldsToInclude: (keyof ProjectData)[] = [
         'projectType', 
-        // Conditionally include projectTypeOther
         ...(projectData.projectType === 'other' && projectData.projectTypeOther ? ['projectTypeOther' as const] : []),
         'projectCategory', 
-        // Conditionally include projectCategoryOther
         ...(projectData.projectCategory === 'other' && projectData.projectCategoryOther ? ['projectCategoryOther' as const] : []),
         'timeline',
         'fullName', 
@@ -66,7 +63,6 @@ export default function SummarySection({ projectData, onPrev, onClearData }: Sum
         'email', 
         'phone', 
         'country', 
-        'idea' // This will be the user's final idea (original or what they typed/accepted after AI)
     ];
 
     fieldsToInclude.forEach(key => {
@@ -75,6 +71,11 @@ export default function SummarySection({ projectData, onPrev, onClearData }: Sum
             message += `*${formatLabel(key)}:* ${formatValue(key, value)}\n`;
         }
     });
+    
+    // Always include 'idea'
+    if (projectData.idea && projectData.idea.trim() !== '') {
+        message += `*${formatLabel('idea')}:* ${projectData.idea}\n`;
+    }
     
     // Add refinedIdea separately if it exists, is not empty, and is different from the main idea
     if (projectData.refinedIdea && projectData.refinedIdea.trim() !== '' && projectData.refinedIdea !== projectData.idea) {
@@ -91,6 +92,7 @@ export default function SummarySection({ projectData, onPrev, onClearData }: Sum
     window.open(url, "_blank");
   };
 
+  // Order for display on the summary page
   const displayOrder: (keyof ProjectData)[] = [
     'projectType', 'projectTypeOther', 'projectCategory', 'projectCategoryOther', 'timeline',
     'fullName', 'companyName', 'email', 'phone', 'country', 'idea'
@@ -108,11 +110,21 @@ export default function SummarySection({ projectData, onPrev, onClearData }: Sum
         {displayOrder.map((key) => {
           const value = projectData[key];
 
-          // Conditional display for "Other" fields
           if (key === 'projectTypeOther' && projectData.projectType !== 'other') return null;
           if (key === 'projectCategoryOther' && projectData.projectCategory !== 'other') return null;
 
-          if (value && String(value).trim() !== '') {
+          // Display the 'idea' field (user's final input)
+          if (key === 'idea' && value && String(value).trim() !== '') {
+             return (
+              <div key={key} className="p-3 bg-background/50 rounded-md border border-border">
+                <span className="font-semibold text-primary">{formatLabel(key)}:</span>
+                <p className="text-foreground whitespace-pre-wrap pl-2">{formatValue(key, value as string)}</p>
+              </div>
+            );
+          }
+          
+          // Display other fields
+          if (key !== 'idea' && value && String(value).trim() !== '') {
             return (
               <div key={key} className="p-3 bg-background/50 rounded-md border border-border">
                 <span className="font-semibold text-primary">{formatLabel(key)}:</span>

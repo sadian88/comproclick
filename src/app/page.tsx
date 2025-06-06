@@ -16,7 +16,7 @@ import ThreeDShape from "@/components/ui/ThreeDShape";
 export default function Home() {
   const [currentStep, setCurrentStep] = useState<StepKey>("hero");
   const [projectData, setProjectData] = useLocalStorage<ProjectData>(
-    "iaDigitalDesignsProject",
+    "comproClickProject",
     initialProjectData
   );
 

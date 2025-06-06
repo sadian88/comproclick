@@ -3,7 +3,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: 'IA Digital Designs',
+  title: 'Compro.click',
   description: 'Impulsa tu negocio con soluciones inteligentes',
 };
 
