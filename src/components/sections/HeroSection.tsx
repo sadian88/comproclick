@@ -50,7 +50,7 @@ export default function HeroSection({ onStartDesigning }: HeroSectionProps) {
             "Tiendas online",
             "Webs para pedidos",
           ].map((service) => (
-            <div key={service} className="p-4 bg-[hsl(var(--color-blanco-puro))/0.2] dark:bg-[hsl(var(--card))/0.2] backdrop-blur-md rounded-lg shadow-lg border border-[hsl(var(--color-blanco-puro))/0.1] hover:shadow-xl transition-shadow duration-300">
+            <div key={service} className="p-4 bg-[hsl(var(--color-blanco-puro))/0.15] dark:bg-[hsl(var(--card))/0.15] backdrop-blur-md rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
               {service}
             </div>
           ))}
@@ -59,5 +59,3 @@ export default function HeroSection({ onStartDesigning }: HeroSectionProps) {
     </section>
   );
 }
-
-    

@@ -8,8 +8,8 @@ import { refineProjectIdea, RefineProjectIdeaInput } from "@/ai/flows/refine-pro
 import { useForm, Controller, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useState, useCallback } // Removed useEffect
-from "lucide-react";
+import { useState, useCallback } from "react";
+import { Loader2, Wand2 } from "lucide-react";
 
 interface ContactFormSectionProps {
   projectData: ProjectData;

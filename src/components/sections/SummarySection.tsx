@@ -72,12 +72,10 @@ export default function SummarySection({ projectData, onPrev, onClearData }: Sum
         }
     });
     
-    // Always include 'idea'
     if (projectData.idea && projectData.idea.trim() !== '') {
         message += `*${formatLabel('idea')}:* ${projectData.idea}\n`;
     }
     
-    // Add refinedIdea separately if it exists, is not empty, and is different from the main idea
     if (projectData.refinedIdea && projectData.refinedIdea.trim() !== '' && projectData.refinedIdea !== projectData.idea) {
         message += `*${formatLabel('refinedIdea')}:* ${projectData.refinedIdea}\n`;
     }
@@ -92,54 +90,50 @@ export default function SummarySection({ projectData, onPrev, onClearData }: Sum
     window.open(url, "_blank");
   };
 
-  // Order for display on the summary page
   const displayOrder: (keyof ProjectData)[] = [
     'projectType', 'projectTypeOther', 'projectCategory', 'projectCategoryOther', 'timeline',
     'fullName', 'companyName', 'email', 'phone', 'country', 'idea'
   ];
 
   return (
-    <GlassCard className="w-full max-w-3xl mx-auto my-12 shadow-xl">
+    <GlassCard className="w-full max-w-3xl mx-auto my-12">
       <div className="text-center mb-8">
         <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
         <h2 className="text-2xl md:text-3xl font-headline font-semibold text-primary">Resumen de tu Proyecto</h2>
         <p className="text-muted-foreground mt-2">Revisa los detalles de tu solicitud antes de enviarla.</p>
       </div>
       
-      <div className="space-y-4 mb-8">
+      <div className="space-y-3 mb-8"> {/* Reduced space-y for tighter packing without borders */}
         {displayOrder.map((key) => {
           const value = projectData[key];
 
           if (key === 'projectTypeOther' && projectData.projectType !== 'other') return null;
           if (key === 'projectCategoryOther' && projectData.projectCategory !== 'other') return null;
 
-          // Display the 'idea' field (user's final input)
           if (key === 'idea' && value && String(value).trim() !== '') {
              return (
-              <div key={key} className="p-3 bg-background/50 rounded-md border border-border">
+              <div key={key} className="p-3 bg-background/30 dark:bg-black/10 rounded-md shadow-sm">
                 <span className="font-semibold text-primary">{formatLabel(key)}:</span>
-                <p className="text-foreground whitespace-pre-wrap pl-2">{formatValue(key, value as string)}</p>
+                <p className="text-foreground whitespace-pre-wrap pl-2 pt-1">{formatValue(key, value as string)}</p>
               </div>
             );
           }
           
-          // Display other fields
           if (key !== 'idea' && value && String(value).trim() !== '') {
             return (
-              <div key={key} className="p-3 bg-background/50 rounded-md border border-border">
+              <div key={key} className="p-3 bg-background/30 dark:bg-black/10 rounded-md shadow-sm">
                 <span className="font-semibold text-primary">{formatLabel(key)}:</span>
-                <p className="text-foreground whitespace-pre-wrap pl-2">{formatValue(key, value as string)}</p>
+                <p className="text-foreground whitespace-pre-wrap pl-2 pt-1">{formatValue(key, value as string)}</p>
               </div>
             );
           }
           return null;
         })}
 
-        {/* Display refinedIdea separately if it exists, is not empty, and is different from the main idea */}
         {projectData.refinedIdea && projectData.refinedIdea.trim() !== '' && projectData.refinedIdea !== projectData.idea && (
-          <div key="refinedIdea" className="p-3 bg-accent/10 rounded-md border border-accent/30">
+          <div key="refinedIdea" className="p-3 bg-accent/10 dark:bg-accent/5 rounded-md shadow-sm">
             <span className="font-semibold text-accent">{formatLabel('refinedIdea')}:</span>
-            <p className="text-foreground whitespace-pre-wrap pl-2">{projectData.refinedIdea}</p>
+            <p className="text-foreground whitespace-pre-wrap pl-2 pt-1">{projectData.refinedIdea}</p>
           </div>
         )}
       </div>
