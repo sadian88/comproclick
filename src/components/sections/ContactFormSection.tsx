@@ -1,3 +1,4 @@
+
 import type { ProjectData } from "@/lib/types";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,9 +12,9 @@ import { useState, useCallback, useEffect } from "react";
 import { Loader2, Wand2 } from "lucide-react";
 
 interface ContactFormSectionProps {
-  projectData: ProjectData; // Pass existing data to prefill if needed, though this form has its own state
-  updateProjectData: (field: keyof ProjectData, value: string) => void; // To update the main projectData
-  onFormSubmit: () => void; // Callback after successful submission to move to summary
+  projectData: ProjectData;
+  updateProjectData: (field: keyof ProjectData, value: string) => void;
+  onFormSubmit: () => void;
   onPrev: () => void;
 }
 
@@ -28,7 +29,6 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
-// Debounce function
 const debounce = <F extends (...args: any[]) => any>(func: F, waitFor: number) => {
   let timeout: ReturnType<typeof setTimeout> | null = null;
   return (...args: Parameters<F>): Promise<ReturnType<F>> =>
@@ -60,38 +60,64 @@ export default function ContactFormSection({ projectData, updateProjectData, onF
   const currentIdea = watch("idea");
 
   const handleRefineIdea = useCallback(async (text: string) => {
-    if (text.length < 10) { // Don't refine very short texts
-      setRefinedIdeaDisplay('');
+    if (text.length < 10 || text === projectData.refinedIdea) { 
+      // Don't refine very short texts or if the current text is already the refined one
+      // (prevents loop if AI returns same refined text as current input)
+      if(text !== projectData.refinedIdea) setRefinedIdeaDisplay('');
       return;
     }
     setIsRefining(true);
     try {
       const input: RefineProjectIdeaInput = { projectIdea: text };
       const result = await refineProjectIdea(input);
-      setRefinedIdeaDisplay(result.refinedIdea);
-      updateProjectData('refinedIdea', result.refinedIdea); // Store AI refined idea in main state
+      // Only update if the refined idea is different from the current input
+      if (result.refinedIdea && result.refinedIdea !== text) {
+        setRefinedIdeaDisplay(result.refinedIdea);
+        updateProjectData('refinedIdea', result.refinedIdea); 
+      } else {
+        setRefinedIdeaDisplay(''); // Clear if AI returns same or empty
+        updateProjectData('refinedIdea', '');
+      }
     } catch (error) {
       console.error("Error refining idea:", error);
       setRefinedIdeaDisplay("No se pudo refinar la idea en este momento.");
+      updateProjectData('refinedIdea', '');
     } finally {
       setIsRefining(false);
     }
-  }, [updateProjectData]);
+  }, [updateProjectData, projectData.refinedIdea]);
 
   const debouncedRefineIdea = useCallback(debounce(handleRefineIdea, 1000), [handleRefineIdea]);
 
   useEffect(() => {
-    if (currentIdea) {
+    // Only trigger refinement if the idea has changed and is not empty.
+    // And if it's not the same as the last AI suggestion that wasn't adopted.
+    if (currentIdea && currentIdea !== projectData.refinedIdea) {
       debouncedRefineIdea(currentIdea);
     }
-  }, [currentIdea, debouncedRefineIdea]);
+  }, [currentIdea, debouncedRefineIdea, projectData.refinedIdea]);
 
   const onSubmit: SubmitHandler<FormData> = (data) => {
     Object.keys(data).forEach(keyStr => {
       const key = keyStr as keyof FormData;
       updateProjectData(key as keyof ProjectData, data[key] as string);
     });
+    // Ensure the refinedIdea in projectData is the one submitted if it was used
+    if (projectData.idea === projectData.refinedIdea && projectData.refinedIdea) {
+      // No action needed, idea is already up-to-date
+    } else if (projectData.refinedIdea && !refinedIdeaDisplay) { 
+      // If refinedIdea exists in projectData but not in display, it means it was adopted.
+      // We keep projectData.idea as is. Clear refinedIdea from projectData as it's now part of main idea.
+      updateProjectData('refinedIdea', '');
+    }
     onFormSubmit();
+  };
+  
+  const handleUseRefinedIdea = () => {
+    setValue("idea", refinedIdeaDisplay);
+    updateProjectData('idea', refinedIdeaDisplay); // Update main state's idea
+    updateProjectData('refinedIdea', refinedIdeaDisplay); // Store it as the current refined idea as well, to prevent immediate re-fetch if useEffect runs.
+    setRefinedIdeaDisplay(''); // Clear the suggestion box after applying
   };
 
   return (
@@ -163,8 +189,10 @@ export default function ContactFormSection({ projectData, updateProjectData, onF
             control={control}
             render={({ field }) => (
               <div>
-                <label htmlFor="idea" className="block text-sm font-medium mb-1">Describe tu idea <span className="text-destructive">*</span></label>
-                <Textarea id="idea" {...field} placeholder="Cuéntanos en detalle qué tienes en mente..." rows={6} className="text-md" />
+                <label htmlFor="idea" className="block text-sm font-medium mb-1">
+                  Describe tu idea (¡Nuestra IA te ayudará a pulirla!) <span className="text-destructive">*</span>
+                </label>
+                <Textarea id="idea" {...field} placeholder="Cuéntanos en detalle qué tienes en mente y observa la magia de la IA..." rows={6} className="text-md" />
                 {errors.idea && <p className="text-sm text-destructive mt-1">{errors.idea.message}</p>}
               </div>
             )}
@@ -172,24 +200,23 @@ export default function ContactFormSection({ projectData, updateProjectData, onF
            {isRefining && (
             <div className="mt-3 flex items-center text-sm text-muted-foreground">
               <Loader2 className="mr-2 h-4 w-4 animate-spin text-accent" />
-              Refinando tu idea con IA...
+              Nuestra IA está pensando en cómo mejorar tu idea...
             </div>
           )}
           {refinedIdeaDisplay && !isRefining && (
             <div className="mt-4 p-4 border border-dashed border-accent rounded-lg bg-accent/10">
-              <h4 className="text-sm font-semibold text-accent mb-2 flex items-center"><Wand2 className="w-4 h-4 mr-2"/> Sugerencia IA:</h4>
+              <h4 className="text-sm font-semibold text-accent mb-2 flex items-center">
+                <Wand2 className="w-4 h-4 mr-2"/> ¡Potencia tu idea con IA! Sugerencia:
+              </h4>
               <p className="text-sm text-foreground whitespace-pre-wrap">{refinedIdeaDisplay}</p>
               <Button 
                 type="button" 
                 variant="link" 
                 size="sm" 
                 className="mt-2 text-accent" 
-                onClick={() => {
-                  setValue("idea", refinedIdeaDisplay);
-                  updateProjectData('idea', refinedIdeaDisplay); // Update main state
-                }}
+                onClick={handleUseRefinedIdea}
               >
-                Usar esta idea
+                Usar esta idea mejorada
               </Button>
             </div>
           )}
@@ -208,3 +235,5 @@ export default function ContactFormSection({ projectData, updateProjectData, onF
     </GlassCard>
   );
 }
+
+    

@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import ThreeDShape from "@/components/ui/ThreeDShape";
 import { ArrowRight } from "lucide-react";
@@ -24,16 +25,16 @@ export default function HeroSection({ onStartDesigning }: HeroSectionProps) {
       </div>
 
       <div className="container mx-auto px-4 relative z-10">
-        <h1 className="text-4xl md:text-6xl font-headline font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-morado-electrico dark:to-accent"> {/* Updated gradient */}
+        <h1 className="text-4xl md:text-6xl font-headline font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-morado-electrico dark:to-accent">
           Impulsa tu negocio con soluciones inteligentes
         </h1>
         <p className="text-xl md:text-2xl text-foreground/90 dark:text-foreground/80 mb-10 max-w-3xl mx-auto">
-          Creamos webs, apps y tiendas online impulsadas por IA para llevar tu proyecto al siguiente nivel.
+          Creamos webs, apps y tiendas online. <strong>Define y refina tu idea con nuestra IA</strong> para llevar tu proyecto al siguiente nivel.
         </p>
         <Button
-          size="lg" // Uses updated button sizes
+          size="lg"
           onClick={onStartDesigning}
-          className="font-semibold text-lg shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105" // Enhanced shadow and transition
+          className="font-semibold text-lg shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
           variant="default"
         >
           Diseña con nosotros
@@ -58,3 +59,5 @@ export default function HeroSection({ onStartDesigning }: HeroSectionProps) {
     </section>
   );
 }
+
+    

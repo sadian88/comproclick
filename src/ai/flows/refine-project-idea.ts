@@ -1,3 +1,4 @@
+
 // src/ai/flows/refine-project-idea.ts
 'use server';
 /**
@@ -25,7 +26,7 @@ const RefineProjectIdeaOutputSchema = z.object({
   refinedIdea: z
     .string()
     .describe(
-      'The AI-refined version of the project idea, incorporating suggestions for clarity and completeness.'
+      'The AI-refined version of the project idea, incorporating suggestions for clarity, completeness, and impact. This should be a constructive suggestion to enhance the original idea.'
     ),
 });
 export type RefineProjectIdeaOutput = z.infer<typeof RefineProjectIdeaOutputSchema>;
@@ -38,11 +39,16 @@ const refineProjectIdeaPrompt = ai.definePrompt({
   name: 'refineProjectIdeaPrompt',
   input: {schema: RefineProjectIdeaInputSchema},
   output: {schema: RefineProjectIdeaOutputSchema},
-  prompt: `You are an AI assistant designed to help users refine their project ideas.  Given the user's initial project idea, provide suggestions and improvements to make the idea more clear, complete, and compelling.
+  prompt: `You are an expert AI assistant specialized in helping users conceptualize and refine project ideas.
+Your goal is to collaborate with the user. Given their initial project idea, analyze it and provide a constructive, enhanced version.
+This enhanced version should aim to improve clarity, completeness, market appeal, or innovative aspects.
+Focus on being helpful and inspiring. If the idea is already very good, you can acknowledge that and offer minor polish or confirm its strength.
+Do not just repeat the idea; offer tangible improvements or a more compelling phrasing.
 
-Initial Project Idea: {{{projectIdea}}}
+Initial Project Idea:
+{{{projectIdea}}}
 
-Refined Project Idea:`, //Crucially return only the refined idea
+Constructively Refined Project Idea (return only this enhanced idea text):`,
 });
 
 const refineProjectIdeaFlow = ai.defineFlow(
@@ -52,7 +58,14 @@ const refineProjectIdeaFlow = ai.defineFlow(
     outputSchema: RefineProjectIdeaOutputSchema,
   },
   async input => {
+    // Basic check to prevent refining empty or too short ideas, though the UI also does this.
+    if (!input.projectIdea || input.projectIdea.trim().length < 5) {
+      return { refinedIdea: input.projectIdea }; // Return original if too short
+    }
     const {output} = await refineProjectIdeaPrompt(input);
-    return output!;
+    // Ensure output is not null and refinedIdea is not empty. If AI fails, return original.
+    return (output && output.refinedIdea) ? output : { refinedIdea: input.projectIdea };
   }
 );
+
+    
