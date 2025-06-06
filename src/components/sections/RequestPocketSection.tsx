@@ -4,10 +4,13 @@ import React, { useState, useEffect } from "react";
 import type { PersonalData, ProjectPocketItem } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import GlassCard from "@/components/ui/GlassCard";
-import { MessageSquare, PlusCircle, Trash2, UserCircle, ListChecks, Edit3, ShieldCheck, ShieldAlert } from "lucide-react";
+import { MessageSquare, PlusCircle, Trash2, UserCircle, ListChecks, Edit3, ShieldCheck, ShieldAlert, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import ContactFormSection from "./ContactFormSection"; 
+import ContactFormSection, { FormData as ContactFormData } from "./ContactFormSection"; 
 import { useToast } from "@/hooks/use-toast";
+import { useForm } from "react-hook-form"; // Import useForm
+import { zodResolver } from "@hookform/resolvers/zod"; // Import zodResolver
+import * as z from "zod"; // Import z
 
 interface RequestPocketSectionProps {
   personalData: PersonalData;
@@ -71,6 +74,15 @@ const projectDataDisplayOrder: (keyof Omit<ProjectPocketItem, 'id' | 'refinedIde
   'idea',
 ];
 
+// Zod schema for ContactForm (can be co-located or imported if preferred)
+const contactFormSchema = z.object({
+  fullName: z.string().min(2, "Nombre completo es requerido.").max(100, "Nombre demasiado largo."),
+  companyName: z.string().max(100, "Nombre de empresa demasiado largo.").optional(),
+  phone: z.string().max(30, "Número de teléfono demasiado largo.").optional(),
+  email: z.string().email("Email inválido.").max(100, "Email demasiado largo."),
+  country: z.string().max(50, "Nombre de país demasiado largo.").optional(),
+});
+
 
 export default function RequestPocketSection({
   personalData,
@@ -83,22 +95,35 @@ export default function RequestPocketSection({
   
   const [showContactForm, setShowContactForm] = useState(false);
   const { toast } = useToast();
+  const [isSubmittingViaParent, setIsSubmittingViaParent] = useState(false);
 
-  const areEssentialDetailsFilled = !!(personalData.fullName && personalData.fullName.trim() !== '' && personalData.email && personalData.email.trim() !== '');
+  // Initialize react-hook-form here for ContactFormSection
+  const formMethods = useForm<ContactFormData>({
+    resolver: zodResolver(contactFormSchema),
+    defaultValues: personalData,
+  });
+
+  // Update form default values when personalData prop changes
+  useEffect(() => {
+    formMethods.reset(personalData);
+  }, [personalData, formMethods]);
+
+
+  const areEssentialDetailsFilledInProp = !!(personalData.fullName && personalData.fullName.trim() !== '' && personalData.email && personalData.email.trim() !== '');
 
   useEffect(() => {
-    if (projectPocket.length > 0 && !areEssentialDetailsFilled) {
+    if (projectPocket.length > 0 && !areEssentialDetailsFilledInProp) {
       setShowContactForm(true);
-    } else if (areEssentialDetailsFilled) {
+    } else if (areEssentialDetailsFilledInProp) {
       setShowContactForm(false); 
     }
-  }, [personalData.fullName, personalData.email, projectPocket.length, areEssentialDetailsFilled]);
+  }, [personalData.fullName, personalData.email, projectPocket.length, areEssentialDetailsFilledInProp]);
 
-  const generateWhatsAppMessage = () => {
+  const generateWhatsAppMessage = (currentPersonalData: PersonalData) => {
     let message = "Hola Compro.click 👋, tengo las siguientes solicitudes de proyecto:\n\n";
     message += "--- MIS DATOS DE CONTACTO ---\n";
     personalDataDisplayOrder.forEach(key => {
-      const value = personalData[key];
+      const value = currentPersonalData[key];
       if (value && String(value).trim() !== '') {
         message += `*${formatPersonalLabel(key)}:* ${value}\n`;
       } else {
@@ -125,7 +150,6 @@ export default function RequestPocketSection({
         message += "\n";
       });
     } else {
-      // This case should ideally not be hit if we're sending, but included for completeness
       message += "Aún no he definido proyectos.\n\n";
     }
 
@@ -133,39 +157,43 @@ export default function RequestPocketSection({
     return encodeURIComponent(message);
   };
 
-  // This function is called when ContactFormSection is submitted
-  const handleSaveAndSend = () => {
-    // personalData should be updated by the time this is called,
-    // due to updatePersonalData being called within ContactFormSection's onSubmit
-    // and React's rendering cycle.
-    // We re-check essential details with the potentially updated personalData prop.
-    const currentAreEssentialDetailsFilled = !!(personalData.fullName && personalData.fullName.trim() !== '' && personalData.email && personalData.email.trim() !== '');
+  // This function is called when ContactFormSection's internal onSubmit calls onFormSubmit
+  const handleContactDataSavedAndSend = (submittedData: ContactFormData) => {
+    setIsSubmittingViaParent(true);
+    // Use submittedData for immediate validation
+    const essentialsFilledFromSubmit = !!(submittedData.fullName && submittedData.fullName.trim() !== '' && submittedData.email && submittedData.email.trim() !== '');
 
-    if (currentAreEssentialDetailsFilled && projectPocket.length > 0) {
-      const message = generateWhatsAppMessage();
+    if (essentialsFilledFromSubmit && projectPocket.length > 0) {
+      // The updatePersonalData calls within ContactFormSection's internalSubmitHandler
+      // will have already updated the state in page.tsx.
+      // For generating the WhatsApp message, we can use the latest `personalData` prop,
+      // or merge `submittedData` with it if needed, but prop should be up-to-date for next render.
+      // For robustness, let's use the prop which should reflect the latest save.
+      const message = generateWhatsAppMessage(personalData); // Use prop which should be latest
       const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${message}`;
       window.open(url, "_blank");
       toast({
         title: "Información Enviada",
         description: "Tus datos y proyectos se han preparado para enviar por WhatsApp.",
       });
-      // The useEffect will hide the form if details are now filled.
+      setShowContactForm(false); // Hide form as data is now considered saved and sent.
     } else {
       toast({
         title: "Faltan Datos Críticos",
         description: "Por favor, asegúrate de que tu nombre, email y al menos un proyecto estén completos antes de enviar.",
         variant: "destructive",
       });
-      if (!currentAreEssentialDetailsFilled) {
-        setShowContactForm(true); // Ensure form stays/becomes visible if details still missing
+      if (!essentialsFilledFromSubmit) {
+        setShowContactForm(true); 
       }
     }
+    setIsSubmittingViaParent(false);
   };
   
   const summaryItemTextClass = "text-foreground";
   const summaryItemLabelClass = "font-semibold text-primary text-sm";
 
-  if (projectPocket.length === 0 && !showContactForm) { // Initial state before any project is added
+  if (projectPocket.length === 0 && !showContactForm) {
     return (
         <GlassCard className="w-full max-w-2xl mx-auto my-8 text-center">
              <ListChecks className="w-12 h-12 text-primary mx-auto mb-3" />
@@ -179,6 +207,9 @@ export default function RequestPocketSection({
     )
   }
 
+  const submitButtonText = areEssentialDetailsFilledInProp ? "Actualizar y Enviar a WhatsApp" : "Guardar y Enviar a WhatsApp";
+  const includeWhatsAppIcon = submitButtonText.toLowerCase().includes("whatsapp");
+
 
   return (
     <GlassCard className="w-full max-w-4xl mx-auto my-8">
@@ -186,28 +217,43 @@ export default function RequestPocketSection({
         <ListChecks className="w-12 h-12 text-primary mx-auto mb-3" />
         <h2 className="text-2xl md:text-3xl font-headline font-semibold text-primary">Bolsillo de Solicitudes</h2>
         <p className="text-muted-foreground mt-2">
-          {areEssentialDetailsFilled && projectPocket.length > 0 
+          {areEssentialDetailsFilledInProp && projectPocket.length > 0 
             ? "Revisa tus proyectos y datos. ¡Listo para enviar!"
             : "Completa tus datos y revisa tus proyectos para enviar."}
         </p>
       </div>
 
-      {/* Contact Form Area: Shown if essential details are missing OR if user clicks 'Edit' */}
       {showContactForm && projectPocket.length > 0 && (
         <div className="mb-10 p-0 md:p-6 rounded-lg bg-background/10 dark:bg-card/10">
           <ContactFormSection
             personalData={personalData}
             updatePersonalData={updatePersonalData}
-            onFormSubmit={handleSaveAndSend} // This will now also trigger WhatsApp
-            title={areEssentialDetailsFilled ? "Editar Datos de Contacto" : "Completa Tus Datos para Enviar"}
-            description={areEssentialDetailsFilled ? "Modifica tu información si es necesario. Al guardar, se preparará el envío por WhatsApp." : "Necesitamos esta información para contactarte. Al guardar, se preparará el envío por WhatsApp."}
-            submitButtonText={areEssentialDetailsFilled ? "Actualizar y Enviar a WhatsApp" : "Guardar y Enviar a WhatsApp"}
+            onFormSubmit={handleContactDataSavedAndSend} 
+            formMethods={formMethods} // Pass form methods
+            title={areEssentialDetailsFilledInProp ? "Editar Datos de Contacto" : "Completa Tus Datos para Enviar"}
+            description={areEssentialDetailsFilledInProp ? "Modifica tu información si es necesario." : "Necesitamos esta información para contactarte."}
           />
+           {/* Action buttons now rendered here, trigger form with id */}
+          <div className="flex flex-col sm:flex-row justify-end items-center pt-6 gap-4 mt-[-1rem] sm:mt-0 px-0 md:px-6">
+             <Button variant="outline" onClick={onAddNewProject} className="w-full sm:w-auto">
+                <PlusCircle className="mr-2 h-5 w-5" />
+                Añadir Otro Proyecto
+            </Button>
+            <Button 
+                type="submit" 
+                form="contact-form" // Submit the form in ContactFormSection
+                disabled={formMethods.formState.isSubmitting || isSubmittingViaParent} 
+                className="w-full sm:w-auto px-6 py-3 text-lg"
+            >
+                {(formMethods.formState.isSubmitting || isSubmittingViaParent) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {includeWhatsAppIcon && !(formMethods.formState.isSubmitting || isSubmittingViaParent) && <MessageSquare className="mr-2 h-5 w-5" />}
+                {submitButtonText}
+            </Button>
+          </div>
         </div>
       )}
 
-      {/* Personal Data Summary (shown when form is hidden AND details are filled) */}
-      {!showContactForm && areEssentialDetailsFilled && (
+      {!showContactForm && areEssentialDetailsFilledInProp && (
         <div className="mb-8 p-5 rounded-lg bg-[hsl(var(--color-blanco-puro))]/15 dark:bg-[hsl(var(--card))]/15 shadow-lg">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-xl font-semibold text-accent flex items-center gap-2">
@@ -233,8 +279,7 @@ export default function RequestPocketSection({
         </div>
       )}
       
-      {/* Warning for incomplete data (shown when form is hidden and details are NOT filled, but there are projects) */}
-      {!showContactForm && !areEssentialDetailsFilled && projectPocket.length > 0 && (
+      {!showContactForm && !areEssentialDetailsFilledInProp && projectPocket.length > 0 && (
          <div className="mb-8 p-5 rounded-lg bg-destructive/10 dark:bg-destructive/20 shadow-lg border border-destructive/50">
             <div className="flex items-center text-destructive mb-3">
                 <ShieldAlert className="w-6 h-6 mr-3"/>
@@ -249,7 +294,6 @@ export default function RequestPocketSection({
         </div>
       )}
 
-      {/* Project Pocket Display */}
       <h3 className="text-xl font-semibold text-primary mb-4">Proyectos en tu Bolsillo ({projectPocket.length})</h3>
       {projectPocket.length === 0 ? ( 
         <p className="text-muted-foreground text-center py-4">Aún no has añadido proyectos a tu bolsillo.</p>
@@ -293,14 +337,34 @@ export default function RequestPocketSection({
         </div>
       )}
 
-      {/* Action Buttons: Only Add New Project and Clear All. Send is handled by ContactForm submission */}
-      <div className="flex flex-col sm:flex-row justify-between items-center pt-6 gap-4 border-t border-border/50 mt-8">
-        <Button variant="outline" onClick={onAddNewProject} className="w-full sm:w-auto px-6 py-3">
-          <PlusCircle className="mr-2 h-5 w-5" />
-          Añadir Otro Proyecto
-        </Button>
-        {/* The main "Send to WhatsApp" button is removed. Submission of contact form now handles this. */}
-      </div>
+      {/* Action buttons for when form is NOT shown */}
+      {!showContactForm && projectPocket.length > 0 && (
+        <div className="flex flex-col sm:flex-row justify-between items-center pt-6 gap-4 border-t border-border/50 mt-8">
+            <Button variant="outline" onClick={onAddNewProject} className="w-full sm:w-auto px-6 py-3">
+                <PlusCircle className="mr-2 h-5 w-5" />
+                Añadir Otro Proyecto
+            </Button>
+            {/* Send to WhatsApp button only here if form is hidden AND details are complete */}
+            {areEssentialDetailsFilledInProp && (
+                 <Button 
+                    onClick={() => {
+                        setIsSubmittingViaParent(true);
+                        // This is a direct send if data is already complete and form isn't shown
+                        const message = generateWhatsAppMessage(personalData);
+                        const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${message}`;
+                        window.open(url, "_blank");
+                        toast({title: "Información Enviada", description: "Preparado para enviar por WhatsApp."});
+                        setIsSubmittingViaParent(false);
+                    }} 
+                    disabled={isSubmittingViaParent}
+                    className="w-full sm:w-auto px-6 py-3 text-lg">
+                    {isSubmittingViaParent && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    <MessageSquare className="mr-2 h-5 w-5" />
+                    Enviar a WhatsApp
+                </Button>
+            )}
+        </div>
+      )}
        <div className="mt-8 text-center">
         <Button variant="link" onClick={onClearAllData} className="text-muted-foreground hover:text-destructive">
           Limpiar bolsillo y datos (empezar de nuevo)
@@ -309,5 +373,3 @@ export default function RequestPocketSection({
     </GlassCard>
   );
 }
-
-    

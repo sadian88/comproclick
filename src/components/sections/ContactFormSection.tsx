@@ -1,24 +1,27 @@
 
 import React from "react";
+import type { UseFormReturn } from "react-hook-form"; // Import UseFormReturn
 import type { PersonalData } from "@/lib/types";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+// Button component is removed as it's handled by the parent
 import GlassCard from "@/components/ui/GlassCard";
 import { useForm, Controller, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Loader2, MessageSquare } from "lucide-react"; // Added MessageSquare for button
+import { Loader2, MessageSquare } from "lucide-react";
 
 interface ContactFormSectionProps {
   personalData: PersonalData;
   updatePersonalData: (field: keyof PersonalData, value: string) => void;
-  onFormSubmit: () => void; 
+  onFormSubmit: (data: FormData) => void; 
+  formMethods: UseFormReturn<FormData>; // Pass all form methods
   title?: string;
   description?: string;
-  submitButtonText?: string;
-  isSubmittingPrimaryAction?: boolean; // To show loader from parent
+  // submitButtonText is removed as button is external
+  // isSubmittingPrimaryAction is removed
 }
 
+// FormData type remains the same
 const formSchema = z.object({
   fullName: z.string().min(2, "Nombre completo es requerido.").max(100, "Nombre demasiado largo."),
   companyName: z.string().max(100, "Nombre de empresa demasiado largo.").optional(),
@@ -27,52 +30,39 @@ const formSchema = z.object({
   country: z.string().max(50, "Nombre de país demasiado largo.").optional(),
 });
 
-type FormData = z.infer<typeof formSchema>;
+export type FormData = z.infer<typeof formSchema>;
 
 export default function ContactFormSection({ 
   personalData, 
   updatePersonalData, 
   onFormSubmit,
+  formMethods, // Destructure formMethods
   title = "Tus Datos de Contacto",
   description = "Necesitamos esta información para contactarte sobre tus proyectos.",
-  submitButtonText = "Guardar Datos de Contacto",
-  isSubmittingPrimaryAction = false
 }: ContactFormSectionProps) {
-  const { control, handleSubmit, formState: { errors, isSubmitting: isFormSubmitting }, reset, watch } = useForm<FormData>({
-    resolver: zodResolver(formSchema),
-    defaultValues: personalData, // Initialize with current personalData
-  });
+  // Use formMethods passed from parent
+  const { control, handleSubmit, formState: { errors }, reset } = formMethods;
 
-  // Effect to reset form when personalData prop changes from parent
-  // This ensures the form reflects data loaded from localStorage or external changes.
   React.useEffect(() => {
     reset(personalData);
   }, [personalData, reset]);
 
-  const onSubmit: SubmitHandler<FormData> = (data) => {
-    // Update parent state (which should trigger localStorage update via useLocalStorage hook)
+  const internalSubmitHandler: SubmitHandler<FormData> = (data) => {
     Object.keys(data).forEach(keyStr => {
       const key = keyStr as keyof FormData;
-      // Ensure that we only update if the value is actually different,
-      // or if the field is one of the mandatory ones being set.
-      // This helps prevent unnecessary re-renders if data hasn't changed.
       if (personalData[key as keyof PersonalData] !== data[key]) {
          updatePersonalData(key as keyof PersonalData, data[key] as string);
       }
     });
-    // Call the callback provided by the parent (RequestPocketSection)
-    // This callback will handle the WhatsApp logic.
-    onFormSubmit(); 
+    onFormSubmit(data); // Pass submitted data to parent
   };
-
-  // Determine if the submit button should include WhatsApp icon
-  const includeWhatsAppIcon = submitButtonText?.toLowerCase().includes("whatsapp");
 
   return (
     <GlassCard className="w-full max-w-3xl mx-auto my-0 shadow-none border-none bg-transparent backdrop-blur-none p-0">
       <h2 className="text-xl md:text-2xl font-headline font-semibold mb-6 text-center text-primary">{title}</h2>
       <p className="text-center text-muted-foreground mb-6 text-sm">{description}</p>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      {/* Form now uses handleSubmit from formMethods, triggered by parent button */}
+      <form onSubmit={handleSubmit(internalSubmitHandler)} id="contact-form" className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Controller
             name="fullName"
@@ -135,16 +125,8 @@ export default function ContactFormSection({
             )}
         />
         
-        <div className="flex justify-end items-center pt-4">
-          <Button type="submit" disabled={isFormSubmitting || isSubmittingPrimaryAction} className="px-6 py-3 text-lg">
-            {(isFormSubmitting || isSubmittingPrimaryAction) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {includeWhatsAppIcon && !(isFormSubmitting || isSubmittingPrimaryAction) && <MessageSquare className="mr-2 h-5 w-5" />}
-            {submitButtonText}
-          </Button>
-        </div>
+        {/* Submit button is removed from here and will be rendered by RequestPocketSection */}
       </form>
     </GlassCard>
   );
 }
-
-    
