@@ -8,18 +8,16 @@ interface HeroSectionProps {
 
 export default function HeroSection({ onStartDesigning }: HeroSectionProps) {
   const serviceCardColors = [
-    "bg-[hsl(var(--color-azul-cielo-suave)/0.25)] dark:bg-[hsl(var(--color-azul-cielo-suave)/0.2)]",
-    "bg-[hsl(var(--color-lila-pastel)/0.25)] dark:bg-[hsl(var(--color-lila-pastel)/0.2)]",
-    "bg-[hsl(var(--color-rosa-claro)/0.25)] dark:bg-[hsl(var(--color-rosa-claro)/0.2)]",
-    "bg-[hsl(var(--color-turquesa-claro)/0.25)] dark:bg-[hsl(var(--color-turquesa-claro)/0.2)]",
-    "bg-[hsl(var(--color-azul-cielo-super-suave)/0.3)] dark:bg-[hsl(var(--color-azul-cielo-super-suave)/0.25)]",
-    "bg-[hsl(var(--color-gris-translucido)/0.25)] dark:bg-[hsl(var(--color-gris-translucido)/0.2)]"
+    "bg-[hsl(var(--color-azul-cielo-suave)/0.4)] dark:bg-[hsl(var(--color-azul-cielo-suave)/0.35)]",
+    "bg-[hsl(var(--color-lila-pastel)/0.4)] dark:bg-[hsl(var(--color-lila-pastel)/0.35)]",
+    "bg-[hsl(var(--color-rosa-claro)/0.4)] dark:bg-[hsl(var(--color-rosa-claro)/0.35)]",
+    "bg-[hsl(var(--color-turquesa-claro)/0.4)] dark:bg-[hsl(var(--color-turquesa-claro)/0.35)]",
+    "bg-[hsl(var(--color-azul-cielo-super-suave)/0.45)] dark:bg-[hsl(var(--color-azul-cielo-super-suave)/0.4)]",
+    "bg-[hsl(var(--color-gris-translucido)/0.4)] dark:bg-[hsl(var(--color-gris-translucido)/0.35)]"
   ];
 
   return (
     <section className="py-16 md:py-24 text-center relative overflow-hidden min-h-[calc(80vh-var(--header-height,100px))] flex flex-col justify-center items-center">
-      {/* Removed decorative ThreeDShape components to align with simpler background style */}
-
       <div className="container mx-auto px-4 relative z-10">
         <h1 className="text-4xl md:text-6xl font-headline font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-morado-electrico dark:to-accent">
           Impulsa tu negocio con soluciones inteligentes
@@ -46,9 +44,9 @@ export default function HeroSection({ onStartDesigning }: HeroSectionProps) {
             "Tiendas online",
             "Webs para pedidos",
           ].map((service, index) => (
-            <div 
-              key={service} 
-              className={`p-4 h-24 flex items-center justify-center text-center backdrop-blur-md rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 ${serviceCardColors[index % serviceCardColors.length]}`}
+            <div
+              key={service}
+              className={`p-4 h-24 flex items-center justify-center text-center backdrop-blur-lg rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 ${serviceCardColors[index % serviceCardColors.length]}`}
             >
               {service}
             </div>

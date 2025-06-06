@@ -97,24 +97,24 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col bg-transparent text-foreground font-body relative overflow-x-hidden">
       <div
-        className="fixed -z-10 top-[-30%] right-[-30%] w-[70vw] h-[70vw] rounded-full bg-[hsl(var(--color-azul-cielo-suave)/0.25)] filter blur-3xl opacity-70"
+        className="fixed -z-10 top-[-30%] right-[-30%] w-[70vw] h-[70vw] rounded-full bg-[hsl(var(--color-azul-cielo-suave)/0.4)] filter blur-3xl opacity-90"
         style={{animation: 'pulse-bg 10s infinite alternate ease-in-out'}}
         aria-hidden="true"
       />
       <div
-        className="fixed -z-10 bottom-[-20%] left-[-20%] w-[60vw] h-[60vw] rounded-full bg-[hsl(var(--color-lila-pastel)/0.2)] filter blur-3xl opacity-60"
+        className="fixed -z-10 bottom-[-20%] left-[-20%] w-[60vw] h-[60vw] rounded-full bg-[hsl(var(--color-lila-pastel)/0.35)] filter blur-3xl opacity-80"
         style={{animation: 'pulse-bg 12s infinite alternate-reverse ease-in-out'}}
         aria-hidden="true"
       />
        <div
-        className="fixed -z-10 top-[10%] left-[5%] w-[40vw] h-[40vw] rounded-full bg-[hsl(var(--color-rosa-claro)/0.15)] filter blur-3xl opacity-65"
+        className="fixed -z-10 top-[10%] left-[5%] w-[40vw] h-[40vw] rounded-full bg-[hsl(var(--color-rosa-claro)/0.3)] filter blur-3xl opacity-85"
         style={{animation: 'pulse-bg 11s infinite alternate ease-in-out'}}
         aria-hidden="true"
       />
        <style jsx global>{`
         @keyframes pulse-bg {
-          0% { transform: scale(0.95); opacity: 0.5; }
-          100% { transform: scale(1.05); opacity: 0.7; }
+          0% { transform: scale(0.95); opacity: 0.75; }
+          100% { transform: scale(1.05); opacity: 0.95; }
         }
       `}</style>
 
