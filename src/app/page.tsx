@@ -8,7 +8,7 @@ import HeroSection from "@/components/sections/HeroSection";
 import ProjectDesignerSection from "@/components/sections/ProjectDesignerSection";
 import ContactFormSection from "@/components/sections/ContactFormSection";
 import SummarySection from "@/components/sections/SummarySection";
-import SuccessStoriesSection from "@/components/sections/SuccessStoriesSection"; // Added import
+import SuccessStoriesSection from "@/components/sections/SuccessStoriesSection";
 import type { ProjectData, StepKey } from "@/lib/types";
 import { initialProjectData } from "@/lib/types";
 import useLocalStorage from "@/hooks/useLocalStorage";
@@ -23,9 +23,8 @@ export default function Home() {
 
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      // Check if any relevant field has data (excluding initial empty strings)
       const hasData = Object.values(projectData).some(val => val && String(val).trim() !== '');
-      if (currentStep !== 'summary' && hasData) { // Don't warn if on summary page or no data
+      if (currentStep !== 'summary' && hasData) {
         event.preventDefault();
         event.returnValue = "Tienes información sin enviar. ¿Estás seguro de que quieres salir?";
       }
@@ -43,19 +42,25 @@ export default function Home() {
   };
 
   const clearProjectData = () => {
-    setProjectData(initialProjectData); // Resets to initial empty state
-    setCurrentStep("hero"); // Go back to hero after clearing
+    setProjectData(initialProjectData); 
+    setCurrentStep("hero"); 
   };
   
   const navigateTo = (step: StepKey) => {
-    window.scrollTo(0, 0); // Scroll to top on step change
+    window.scrollTo(0, 0); 
     setCurrentStep(step);
+  };
+
+  const resetToHero = () => {
+    setCurrentStep("hero");
+    window.scrollTo(0, 0);
+    // Optionally, you might want to clear projectData here too if clicking logo means "start fresh"
+    // clearProjectData(); // Uncomment if logo click should also clear all form data
   };
 
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground font-body relative overflow-x-hidden">
-      {/* Decorative background elements */}
       <div className="fixed -top-40 -left-40 opacity-30 dark:opacity-20 -z-10 animate-pulse">
         <ThreeDShape type="sphere" size={400} color="hsl(var(--color-azul-cielo-suave))" />
       </div>
@@ -67,7 +72,7 @@ export default function Home() {
       </div>
 
 
-      <Header />
+      <Header onLogoClick={resetToHero} />
       <main className="flex-grow container mx-auto px-4 py-8 md:py-12 flex flex-col items-center relative z-10 w-full">
         {currentStep === "hero" && (
           <>
@@ -80,7 +85,7 @@ export default function Home() {
             projectData={projectData} 
             updateProjectData={updateProjectData}
             onDesignerComplete={() => navigateTo("contact")}
-            onBackToHero={() => navigateTo("hero")}
+            onBackToHero={resetToHero} // Use resetToHero for consistency
           />
         )}
         {currentStep === "contact" && (
