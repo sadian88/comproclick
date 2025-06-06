@@ -13,8 +13,9 @@ interface Step1TypeProps {
 }
 
 const projectTypes = [
-  { id: "website", label: "Sitio web" },
-  { id: "mobile_app", label: "App móvil" },
+  { id: "order_site", label: "Sitio de Pedidos" },
+  { id: "online_store", label: "Tienda Online" },  
+  { id: "ai_workflow", label: "Flujo Automatico con IA" },
   { id: "other", label: "Otro" },
 ];
 
@@ -38,7 +39,7 @@ export default function Step1Type({ data, onChange, onNext, onPrev }: Step1TypeP
           </div>
         ))}
       </RadioGroup>
-      {data.projectType === "other" && (
+      {data.projectType === "other_system" && (
         <Input
           type="text"
           placeholder="Especifica el tipo de proyecto"

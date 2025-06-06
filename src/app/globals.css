@@ -87,8 +87,13 @@
   * {
     @apply border-border;
   }
-  html {
-    cursor: crosshair; /* Technological cursor */
+  /* Default cursor */
+  * {
+    cursor: url('/img/cursor.png'), auto !important; /* Custom image cursor with fallback */
+  }
+  /* Cursor for clickable elements */
+  button, a, input[type="button"], input[type="submit"], input[type="reset"], [role="button"], [role="link"] {
+    cursor: url('/img/cursorhand.png'), pointer !important; /* Custom hand cursor with pointer fallback */
   }
   body {
     @apply bg-background text-foreground;

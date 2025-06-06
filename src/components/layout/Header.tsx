@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Facebook, Instagram, Sparkles, MessageCircle, Menu, X } from 'lucide-react';
+import { Facebook, Instagram, MessageCircle, Menu, X } from 'lucide-react';
 
 interface HeaderProps {
   onLogoClick?: () => void;
@@ -38,8 +38,7 @@ export default function Header({ onLogoClick, onNavigateToDesigner }: HeaderProp
             className="text-2xl md:text-3xl font-headline font-bold text-primary hover:text-accent transition-colors duration-300 flex items-center gap-2"
             aria-label="Volver a la página de inicio de Compro.click"
           >
-            <Sparkles className="w-7 h-7 text-dorado-metalico" />
-            Compro.click
+             <img src="/logo.jpeg" alt="Logo Compro.click" className="h-10 w-auto" />
           </Link>
 
           {/* Contenedor para Menú de Escritorio, Redes Sociales y Botón Hamburguesa */}
