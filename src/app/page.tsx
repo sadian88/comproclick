@@ -55,12 +55,16 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground font-body relative overflow-x-hidden">
       {/* Decorative background elements */}
-      <div className="fixed -top-40 -left-40 opacity-20 -z-10 animate-pulse">
+      <div className="fixed -top-40 -left-40 opacity-30 dark:opacity-20 -z-10 animate-pulse">
         <ThreeDShape type="sphere" size={400} color="hsl(var(--color-azul-cielo-suave))" />
       </div>
-      <div className="fixed -bottom-60 -right-60 opacity-10 -z-10 animate-pulse animation-delay-1000">
+      <div className="fixed -bottom-60 -right-60 opacity-20 dark:opacity-10 -z-10 animate-pulse animation-delay-1000">
         <ThreeDShape type="polyhedron" size={500} color="hsl(var(--color-lila-pastel))" />
       </div>
+       <div className="fixed top-1/2 left-1/4 opacity-20 dark:opacity-10 -z-10 animate-pulse animation-delay-500 transform -translate-y-1/2">
+        <ThreeDShape type="crystal" size={300} color="hsl(var(--color-rosa-claro))" />
+      </div>
+
 
       <Header />
       <main className="flex-grow container mx-auto px-4 py-8 md:py-12 flex flex-col items-center relative z-10">

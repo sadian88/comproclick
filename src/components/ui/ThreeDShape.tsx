@@ -3,36 +3,36 @@ import { cn } from "@/lib/utils";
 interface ThreeDShapeProps {
   type: "sphere" | "polyhedron" | "crystal";
   className?: string;
-  color?: string; // Allows overriding default metallic gold
-  size?: number; // Approx size in pixels
+  color?: string; 
+  size?: number; 
 }
 
 // Basic SVG Sphere
 const SphereSvg = ({ color, size }: { color: string; size: number }) => (
   <svg width={size} height={size} viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
     <defs>
-      <radialGradient id="sphereGradient" cx="30%" cy="30%" r="70%">
-        <stop offset="0%" style={{ stopColor: 'hsl(var(--color-dorado-metalico)/0.8)', stopOpacity: 1 }} />
-        <stop offset="100%" style={{ stopColor: color, stopOpacity: 1 }} />
+      <radialGradient id="sphereGradientModern" cx="30%" cy="30%" r="70%">
+        <stop offset="0%" style={{ stopColor: 'hsl(var(--color-blanco-puro)/0.8)', stopOpacity: 1 }} />
+        <stop offset="100%" style={{ stopColor: color, stopOpacity: 0.7 }} />
       </radialGradient>
     </defs>
-    <circle cx="50" cy="50" r="45" fill="url(#sphereGradient)" />
-    <circle cx="50" cy="50" r="45" fill="transparent" stroke={color} strokeWidth="1" opacity="0.5"/>
+    <circle cx="50" cy="50" r="45" fill="url(#sphereGradientModern)" />
+    <circle cx="50" cy="50" r="45" fill="transparent" stroke={color} strokeWidth="0.5" opacity="0.4"/>
   </svg>
 );
 
-// Basic SVG Polyhedron (Cube-like)
+// Basic SVG Polyhedron (Abstracted)
 const PolyhedronSvg = ({ color, size }: { color: string; size: number }) => (
   <svg width={size} height={size} viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
     <defs>
-       <linearGradient id="polyGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" style={{ stopColor: 'hsl(var(--color-dorado-metalico)/0.7)', stopOpacity: 1 }} />
-        <stop offset="100%" style={{ stopColor: color, stopOpacity: 1 }} />
+       <linearGradient id="polyGradientModern" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style={{ stopColor: 'hsl(var(--color-lila-pastel)/0.7)', stopOpacity: 1 }} />
+        <stop offset="100%" style={{ stopColor: color, stopOpacity: 0.8 }} />
       </linearGradient>
     </defs>
-    <rect x="15" y="15" width="70" height="70" fill="url(#polyGradient)" stroke={color} strokeWidth="1.5" transform="rotate(10 50 50)" opacity="0.9" />
-     <path d="M15 15 L45 5 L85 15 L55 25 Z" fill={color} opacity="0.6" transform="rotate(10 50 50)" />
-     <path d="M85 15 L85 85 L55 95 L55 25 Z" fill={color} opacity="0.4" transform="rotate(10 50 50)" />
+    <rect x="15" y="15" width="70" height="70" fill="url(#polyGradientModern)" stroke={color} strokeWidth="1" opacity="0.8" rx="10" transform="rotate(15 50 50)" />
+     <path d="M20 20 L50 10 L80 20 L65 35 Z" fill='hsl(var(--color-blanco-puro)/0.3)' opacity="0.5" transform="rotate(15 50 50)" />
+     <path d="M80 20 L80 80 L65 90 L65 35 Z" fill='hsl(var(--color-blanco-puro)/0.2)' opacity="0.4" transform="rotate(15 50 50)" />
   </svg>
 );
 
@@ -40,21 +40,22 @@ const PolyhedronSvg = ({ color, size }: { color: string; size: number }) => (
 const CrystalSvg = ({ color, size }: { color: string; size: number }) => (
  <svg width={size} height={size} viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
     <defs>
-      <linearGradient id="crystalGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" style={{stopColor: 'hsl(var(--color-lila-pastel))', stopOpacity: 0.7}} />
-        <stop offset="50%" style={{stopColor: 'hsl(var(--color-rosa-claro))', stopOpacity: 0.5}} />
-        <stop offset="100%" style={{stopColor: 'hsl(var(--color-azul-cielo-suave))', stopOpacity: 0.7}} />
+      <linearGradient id="crystalGradientModern" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style={{stopColor: 'hsl(var(--color-rosa-claro)/0.8)', stopOpacity: 0.8}} />
+        <stop offset="50%" style={{stopColor: color, stopOpacity: 0.6}} />
+        <stop offset="100%" style={{stopColor: 'hsl(var(--color-azul-cielo-suave)/0.8)', stopOpacity: 0.8}} />
       </linearGradient>
     </defs>
-    <polygon points="50,5 20,30 30,70 70,70 80,30" fill="url(#crystalGradient)" stroke="hsl(var(--color-gris-translucido))" strokeWidth="1" />
-    <polygon points="50,5 50,40 20,30" fill="hsl(var(--color-lila-pastel)/0.3)" />
-    <polygon points="50,5 50,40 80,30" fill="hsl(var(--color-rosa-claro)/0.3)" />
-    <polygon points="30,70 50,40 20,30" fill="hsl(var(--color-azul-cielo-suave)/0.3)" />
+    <polygon points="50,5 15,35 30,75 70,75 85,35" fill="url(#crystalGradientModern)" stroke="hsl(var(--color-blanco-puro)/0.3)" strokeWidth="0.75" />
+    <polygon points="50,5 50,45 15,35" fill="hsl(var(--color-lila-pastel)/0.3)" />
+    <polygon points="50,5 50,45 85,35" fill="hsl(var(--color-rosa-claro)/0.3)" />
+    <polygon points="30,75 50,45 15,35" fill="hsl(var(--color-azul-cielo-suave)/0.4)" />
   </svg>
 );
 
 
-export default function ThreeDShape({ type, className, color = "hsl(var(--color-dorado-metalico))", size = 60 }: ThreeDShapeProps) {
+export default function ThreeDShape({ type, className, color = "hsl(var(--color-turquesa-claro))", size = 60 }: ThreeDShapeProps) {
+  // Default color changed to a soft turquoise
   let ShapeComponent;
   switch (type) {
     case "sphere":

@@ -31,9 +31,12 @@ export default function Step2Category({ data, onChange, onNext, onPrev }: Step2C
         className="space-y-4"
       >
         {projectCategories.map((category) => (
-          <div key={category.id} className="flex items-center space-x-3 p-4 border border-border rounded-lg hover:bg-secondary/50 transition-colors cursor-pointer has-[:checked]:bg-secondary has-[:checked]:border-primary">
-            <RadioGroupItem value={category.id} id={`category-${category.id}`} />
-            <Label htmlFor={`category-${category.id}`} className="text-lg cursor-pointer flex-grow">{category.label}</Label>
+          <div 
+            key={category.id} 
+            className="flex items-center space-x-3 p-5 border border-transparent rounded-lg bg-background/30 hover:bg-primary/10 transition-all duration-200 cursor-pointer has-[:checked]:bg-primary/20 has-[:checked]:border-primary/50 has-[:checked]:shadow-lg"
+          >
+            <RadioGroupItem value={category.id} id={`category-${category.id}`} className="border-foreground/50"/>
+            <Label htmlFor={`category-${category.id}`} className="text-lg font-medium cursor-pointer flex-grow text-foreground/90 has-[:checked]:text-primary">{category.label}</Label>
           </div>
         ))}
       </RadioGroup>
@@ -43,7 +46,7 @@ export default function Step2Category({ data, onChange, onNext, onPrev }: Step2C
           placeholder="Especifica la categoría del proyecto"
           value={data.projectCategoryOther || ""}
           onChange={(e) => onChange("projectCategoryOther", e.target.value)}
-          className="mt-4 p-4 text-md"
+          className="mt-6" // Increased margin-top
         />
       )}
     </StepWrapper>
