@@ -1,3 +1,4 @@
+
 // src/app/page.tsx
 "use client";
 
@@ -6,26 +7,38 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import HeroSection from "@/components/sections/HeroSection";
 import ProjectDesignerSection from "@/components/sections/ProjectDesignerSection";
-import ContactFormSection from "@/components/sections/ContactFormSection";
-import SummarySection from "@/components/sections/SummarySection";
-import SuccessStoriesSection from "@/components/sections/SuccessStoriesSection";
-import type { ProjectData, StepKey } from "@/lib/types";
-import { initialProjectData } from "@/lib/types";
+import ContactFormSection from "@/components/sections/ContactFormSection"; // Will be for PersonalData
+import RequestPocketSection from "@/components/sections/RequestPocketSection"; // Was SummarySection
+import SuccessStoriesSection from "@/components/sections/SuccessStoriesSection"; // Added import
+import type { PersonalData, ProjectPocketItem, StepKey } from "@/lib/types";
+import { initialPersonalData, initialProjectPocketItem } from "@/lib/types";
 import useLocalStorage from "@/hooks/useLocalStorage";
 
 export default function Home() {
   const [currentStep, setCurrentStep] = useState<StepKey>("hero");
-  const [projectData, setProjectData] = useLocalStorage<ProjectData>(
-    "comproClickProject",
-    initialProjectData
+
+  const [personalData, setPersonalData] = useLocalStorage<PersonalData>(
+    "comproClickUserContact",
+    initialPersonalData
+  );
+  const [projectPocket, setProjectPocket] = useLocalStorage<ProjectPocketItem[]>(
+    "comproClickProjectPocket",
+    []
+  );
+  const [currentProjectData, setCurrentProjectData] = useState<Omit<ProjectPocketItem, 'id'>>(
+    initialProjectPocketItem
   );
 
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      const hasData = Object.values(projectData).some(val => val && String(val).trim() !== '');
-      if (currentStep !== 'summary' && hasData) {
+      const hasUnsavedProjectData = Object.values(currentProjectData).some(val => val && String(val).trim() !== '');
+      const hasPersonalData = Object.values(personalData).some(val => val && String(val).trim() !== '');
+      
+      // Warn if trying to leave during project design or if personal details form has data but no projects yet
+      if ( (currentStep === 'projectDesigner' && hasUnsavedProjectData) || 
+           (currentStep === 'personalDetails' && hasPersonalData && projectPocket.length === 0) ) {
         event.preventDefault();
-        event.returnValue = "Tienes información sin enviar. ¿Estás seguro de que quieres salir?";
+        event.returnValue = "Tienes información sin guardar/enviar. ¿Estás seguro de que quieres salir?";
       }
     };
 
@@ -33,18 +46,37 @@ export default function Home() {
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
-  }, [projectData, currentStep]);
+  }, [personalData, currentProjectData, projectPocket, currentStep]);
 
-  // Removed useEffect for mousemove tracking as the dynamic gradient is removed
 
-  const updateProjectData = (field: keyof ProjectData, value: string) => {
-    setProjectData((prev) => ({ ...prev, [field]: value }));
+  const updatePersonalData = (field: keyof PersonalData, value: string) => {
+    setPersonalData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const clearProjectData = () => {
-    setProjectData(initialProjectData); 
-    setCurrentStep("hero"); 
+  const updateCurrentProjectData = (field: keyof Omit<ProjectPocketItem, 'id'>, value: string) => {
+    setCurrentProjectData((prev) => ({ ...prev, [field]: value }));
   };
+
+  const addCurrentProjectToPocket = () => {
+    const newProject: ProjectPocketItem = {
+      ...currentProjectData,
+      id: new Date().toISOString() + Math.random().toString(36).substring(2, 9), // Simple unique ID
+    };
+    setProjectPocket((prevPocket) => [...prevPocket, newProject]);
+    setCurrentProjectData(initialProjectPocketItem); // Reset for next project
+    navigateTo("requestPocket");
+  };
+  
+  const clearAllData = () => {
+    setPersonalData(initialPersonalData);
+    setProjectPocket([]);
+    setCurrentProjectData(initialProjectPocketItem);
+    setCurrentStep("hero");
+  };
+
+  const removeProjectFromPocket = (projectId: string) => {
+    setProjectPocket(prevPocket => prevPocket.filter(p => p.id !== projectId));
+  }
   
   const navigateTo = (step: StepKey) => {
     window.scrollTo(0, 0); 
@@ -52,14 +84,28 @@ export default function Home() {
   };
 
   const resetToHero = () => {
+    // Decide if clearing data is appropriate when clicking logo, or just go to hero
+    // For now, just go to hero, data persists.
     setCurrentStep("hero");
     window.scrollTo(0, 0);
+  };
+
+  // Determine if personal details have been filled enough to proceed
+  const arePersonalDetailsFilled = () => {
+    return personalData.fullName && personalData.email; // Basic check
+  };
+
+  const handleStartDesigning = () => {
+    if (arePersonalDetailsFilled()) {
+      navigateTo("projectDesigner");
+    } else {
+      navigateTo("personalDetails");
+    }
   };
 
 
   return (
     <div className="min-h-screen flex flex-col bg-transparent text-foreground font-body relative overflow-x-hidden">
-      {/* New soft blurred background shapes */}
       <div
         className="fixed -z-10 top-[-30%] right-[-30%] w-[70vw] h-[70vw] rounded-full bg-[hsl(var(--color-azul-cielo-suave)/0.15)] filter blur-3xl"
         aria-hidden="true"
@@ -73,36 +119,40 @@ export default function Home() {
         aria-hidden="true"
       />
 
-
       <Header onLogoClick={resetToHero} />
       <main className="flex-grow container mx-auto px-4 py-8 md:py-12 flex flex-col items-center relative z-10 w-full">
         {currentStep === "hero" && (
           <>
-            <HeroSection onStartDesigning={() => navigateTo("type")} />
+            <HeroSection onStartDesigning={handleStartDesigning} />
             <SuccessStoriesSection />
           </>
         )}
-        {currentStep === "type" && (
-          <ProjectDesignerSection 
-            projectData={projectData} 
-            updateProjectData={updateProjectData}
-            onDesignerComplete={() => navigateTo("contact")}
-            onBackToHero={resetToHero}
-          />
-        )}
-        {currentStep === "contact" && (
+        {currentStep === "personalDetails" && (
           <ContactFormSection
-            projectData={projectData}
-            updateProjectData={updateProjectData}
-            onFormSubmit={() => navigateTo("summary")}
-            onPrev={() => navigateTo("type")}
+            personalData={personalData}
+            updatePersonalData={updatePersonalData}
+            onFormSubmit={() => navigateTo("projectDesigner")} // After contact, go to project designer
+            // No 'onPrev' from personal details if it's the first step after hero for a new user
+            // Or, onPrev could go to 'hero'
+            onPrev={resetToHero}
           />
         )}
-        {currentStep === "summary" && (
-          <SummarySection 
-            projectData={projectData} 
-            onPrev={() => navigateTo("contact")}
-            onClearData={clearProjectData}
+        {currentStep === "projectDesigner" && (
+          <ProjectDesignerSection 
+            projectData={currentProjectData} 
+            updateProjectData={updateCurrentProjectData}
+            onDesignerComplete={addCurrentProjectToPocket} // Adds to pocket and navigates
+            onBackToDesignerHome={() => navigateTo(projectPocket.length > 0 ? "requestPocket" : (arePersonalDetailsFilled() ? "projectDesigner" : "personalDetails"))} // Go to pocket or back to contact
+          />
+        )}
+        {currentStep === "requestPocket" && (
+          <RequestPocketSection 
+            personalData={personalData}
+            projectPocket={projectPocket}
+            onClearAllData={clearAllData}
+            onAddNewProject={() => navigateTo("projectDesigner")}
+            onRemoveProject={removeProjectFromPocket}
+            // onEditProject an be added later
           />
         )}
       </main>

@@ -1,9 +1,7 @@
 
-// This file is effectively replaced by RequestPocketSection.tsx
-// For the operation, I will provide the content for RequestPocketSection.tsx
-// but tell the system to write it to this old path, and then I'll add a new file
-// for RequestPocketSection.tsx in a subsequent step if needed, or rename this.
-// For now, let's overwrite SummarySection.tsx with the new pocket logic.
+// src/components/sections/RequestPocketSection.tsx
+// This file is created to house the new "Bolsillo de Solicitudes" logic.
+// The content is identical to the new SummarySection.tsx content provided above.
 
 import type { PersonalData, ProjectPocketItem } from "@/lib/types";
 import { Button } from "@/components/ui/button";
@@ -235,4 +233,3 @@ export default function RequestPocketSection({
     </GlassCard>
   );
 }
-

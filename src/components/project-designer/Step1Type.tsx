@@ -1,14 +1,15 @@
-import type { ProjectData } from "@/lib/types";
+
+import type { ProjectPocketItem } from "@/lib/types";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import StepWrapper from "./StepWrapper";
 
 interface Step1TypeProps {
-  data: ProjectData;
-  onChange: (field: keyof ProjectData, value: string) => void;
+  data: Omit<ProjectPocketItem, 'id'>;
+  onChange: (field: keyof Omit<ProjectPocketItem, 'id'>, value: string) => void;
   onNext: () => void;
-  onPrev: () => void;
+  onPrev: () => void; // This is onBackToDesignerHome from ProjectDesignerSection
 }
 
 const projectTypes = [
@@ -21,7 +22,7 @@ export default function Step1Type({ data, onChange, onNext, onPrev }: Step1TypeP
   const isNextDisabled = !data.projectType || (data.projectType === "other" && !data.projectTypeOther);
 
   return (
-    <StepWrapper title="Paso 1: ¿Qué quieres crear?" onNext={onNext} onPrev={onPrev} isNextDisabled={isNextDisabled}>
+    <StepWrapper title="Paso 1: ¿Qué quieres crear?" onNext={onNext} onPrev={onPrev} isNextDisabled={isNextDisabled} prevButtonText="Volver">
       <RadioGroup
         value={data.projectType}
         onValueChange={(value) => onChange("projectType", value)}
@@ -43,7 +44,7 @@ export default function Step1Type({ data, onChange, onNext, onPrev }: Step1TypeP
           placeholder="Especifica el tipo de proyecto"
           value={data.projectTypeOther || ""}
           onChange={(e) => onChange("projectTypeOther", e.target.value)}
-          className="mt-6" // Increased margin-top
+          className="mt-6"
         />
       )}
     </StepWrapper>

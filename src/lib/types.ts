@@ -1,31 +1,39 @@
-export interface ProjectData {
-  projectType?: string;
-  projectTypeOther?: string;
-  projectCategory?: string;
-  projectCategoryOther?: string;
-  timeline?: string;
+
+export interface PersonalData {
   fullName?: string;
   companyName?: string;
   phone?: string;
   email?: string;
   country?: string;
-  idea?: string;
-  refinedIdea?: string; // Stored separately, user might choose to use it
 }
 
-export type StepKey = 'hero' | 'type' | 'category' | 'timeline' | 'contact' | 'summary';
+export interface ProjectPocketItem {
+  id: string; // Unique ID for each project item
+  projectType?: string;
+  projectTypeOther?: string;
+  projectCategory?: string;
+  projectCategoryOther?: string;
+  timeline?: string;
+  idea?: string; // Project idea/description
+  refinedIdea?: string; // Stored separately if AI was used
+}
 
-export const initialProjectData: ProjectData = {
-  projectType: '',
-  projectTypeOther: '',
-  projectCategory: '',
-  projectCategoryOther: '',
-  timeline: '',
+export type StepKey = 'hero' | 'personalDetails' | 'projectDesigner' | 'requestPocket';
+
+export const initialPersonalData: PersonalData = {
   fullName: '',
   companyName: '',
   phone: '',
   email: '',
   country: '',
+};
+
+export const initialProjectPocketItem: Omit<ProjectPocketItem, 'id'> = {
+  projectType: '',
+  projectTypeOther: '',
+  projectCategory: '',
+  projectCategoryOther: '',
+  timeline: '',
   idea: '',
   refinedIdea: '',
 };

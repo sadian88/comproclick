@@ -1,12 +1,13 @@
-import type { ProjectData } from "@/lib/types";
+
+import type { ProjectPocketItem } from "@/lib/types";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import StepWrapper from "./StepWrapper";
 
 interface Step3TimelineProps {
-  data: ProjectData;
-  onChange: (field: keyof ProjectData, value: string) => void;
-  onNext: () => void;
+  data: Omit<ProjectPocketItem, 'id'>;
+  onChange: (field: keyof Omit<ProjectPocketItem, 'id'>, value: string) => void;
+  onNext: () => void; // Will go to Project Idea step
   onPrev: () => void;
 }
 
@@ -20,7 +21,7 @@ export default function Step3Timeline({ data, onChange, onNext, onPrev }: Step3T
   const isNextDisabled = !data.timeline;
 
   return (
-    <StepWrapper title="Paso 3: ¿En cuánto tiempo lo necesitas?" onNext={onNext} onPrev={onPrev} nextButtonText="Ir al formulario" isNextDisabled={isNextDisabled}>
+    <StepWrapper title="Paso 3: ¿En cuánto tiempo lo necesitas?" onNext={onNext} onPrev={onPrev} nextButtonText="Siguiente: Describe tu Idea" isNextDisabled={isNextDisabled}>
       <RadioGroup
         value={data.timeline}
         onValueChange={(value) => onChange("timeline", value)}

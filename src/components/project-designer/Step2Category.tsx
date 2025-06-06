@@ -1,12 +1,13 @@
-import type { ProjectData } from "@/lib/types";
+
+import type { ProjectPocketItem } from "@/lib/types";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import StepWrapper from "./StepWrapper";
 
 interface Step2CategoryProps {
-  data: ProjectData;
-  onChange: (field: keyof ProjectData, value: string) => void;
+  data: Omit<ProjectPocketItem, 'id'>;
+  onChange: (field: keyof Omit<ProjectPocketItem, 'id'>, value: string) => void;
   onNext: () => void;
   onPrev: () => void;
 }
@@ -46,7 +47,7 @@ export default function Step2Category({ data, onChange, onNext, onPrev }: Step2C
           placeholder="Especifica la categoría del proyecto"
           value={data.projectCategoryOther || ""}
           onChange={(e) => onChange("projectCategoryOther", e.target.value)}
-          className="mt-6" // Increased margin-top
+          className="mt-6"
         />
       )}
     </StepWrapper>
