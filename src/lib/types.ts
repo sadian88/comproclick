@@ -18,7 +18,7 @@ export interface ProjectPocketItem {
   refinedIdea?: string; // Stored separately if AI was used
 }
 
-export type StepKey = 'hero' | 'personalDetails' | 'projectDesigner' | 'requestPocket';
+export type StepKey = 'hero' | 'projectDesigner' | 'requestPocket'; // Removed 'personalDetails'
 
 export const initialPersonalData: PersonalData = {
   fullName: '',

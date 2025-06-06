@@ -1,19 +1,20 @@
 
 // src/components/sections/RequestPocketSection.tsx
+import React, { useState, useEffect } from "react";
 import type { PersonalData, ProjectPocketItem } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import GlassCard from "@/components/ui/GlassCard";
-import { MessageSquare, PlusCircle, Trash2, UserCircle, ListChecks, Edit3 } from "lucide-react";
+import { MessageSquare, PlusCircle, Trash2, UserCircle, ListChecks, Edit3, ShieldCheck, ShieldAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
+import ContactFormSection from "./ContactFormSection"; // Import ContactFormSection
 
 interface RequestPocketSectionProps {
   personalData: PersonalData;
+  updatePersonalData: (field: keyof PersonalData, value: string) => void; // For ContactForm
   projectPocket: ProjectPocketItem[];
   onClearAllData: () => void;
   onAddNewProject: () => void;
   onRemoveProject: (projectId: string) => void;
-  onEditPersonalData: () => void; // New prop
-  // onEditProject: (projectId: string) => void; // Future enhancement
 }
 
 const WHATSAPP_NUMBER = "+573153042476"; 
@@ -72,12 +73,29 @@ const projectDataDisplayOrder: (keyof Omit<ProjectPocketItem, 'id' | 'refinedIde
 
 export default function RequestPocketSection({
   personalData,
+  updatePersonalData,
   projectPocket,
   onClearAllData,
   onAddNewProject,
   onRemoveProject,
-  onEditPersonalData,
 }: RequestPocketSectionProps) {
+  
+  const [showContactForm, setShowContactForm] = useState(false);
+
+  const areEssentialDetailsFilled = personalData.fullName && personalData.email;
+
+  useEffect(() => {
+    // Show form automatically if essential details are missing and pocket is not empty
+    if (projectPocket.length > 0 && !areEssentialDetailsFilled) {
+      setShowContactForm(true);
+    } else if (areEssentialDetailsFilled) {
+        setShowContactForm(false); // Hide if they become filled (e.g. loaded from localstorage later)
+    }
+  }, [personalData.fullName, personalData.email, projectPocket.length, areEssentialDetailsFilled]);
+
+  const handleContactFormSubmit = () => {
+    setShowContactForm(false); // Hide form after successful submission
+  };
   
   const generateWhatsAppMessage = () => {
     let message = "Hola Compro.click 👋, tengo las siguientes solicitudes de proyecto:\n\n";
@@ -110,6 +128,7 @@ export default function RequestPocketSection({
         message += "\n";
       });
     } else {
+      // This case should ideally not be hit if button is disabled correctly
       message += "Aún no he definido proyectos.\n\n";
     }
 
@@ -118,13 +137,9 @@ export default function RequestPocketSection({
   };
 
   const handleSendToWhatsApp = () => {
-    if (!personalData.fullName || !personalData.email) {
-      // This alert is now less critical as there's a direct link, but good as a fallback.
-      // toast({ title: "Datos incompletos", description: "Por favor, completa tu nombre y email.", variant: "destructive" });
-      return;
-    }
-    if (projectPocket.length === 0) {
-      // toast({ title: "Bolsillo vacío", description: "Añade al menos un proyecto.", variant: "destructive" });
+    if (!areEssentialDetailsFilled || projectPocket.length === 0) {
+      // This is a safeguard, button should be disabled
+      if(!areEssentialDetailsFilled) setShowContactForm(true); // Show form if somehow tried to send
       return;
     }
     const message = generateWhatsAppMessage();
@@ -135,43 +150,87 @@ export default function RequestPocketSection({
   const summaryItemTextClass = "text-foreground";
   const summaryItemLabelClass = "font-semibold text-primary text-sm";
 
+  if (projectPocket.length === 0 && !showContactForm) {
+    return (
+        <GlassCard className="w-full max-w-2xl mx-auto my-8 text-center">
+             <ListChecks className="w-12 h-12 text-primary mx-auto mb-3" />
+            <h2 className="text-2xl md:text-3xl font-headline font-semibold text-primary">Bolsillo de Solicitudes Vacío</h2>
+            <p className="text-muted-foreground mt-2 mb-6">Aún no has añadido proyectos. ¡Empieza a diseñar!</p>
+            <Button onClick={onAddNewProject} className="px-6 py-3">
+                <PlusCircle className="mr-2 h-5 w-5" />
+                Añadir Nuevo Proyecto
+            </Button>
+        </GlassCard>
+    )
+  }
+
+
   return (
     <GlassCard className="w-full max-w-4xl mx-auto my-8">
       <div className="text-center mb-8">
         <ListChecks className="w-12 h-12 text-primary mx-auto mb-3" />
         <h2 className="text-2xl md:text-3xl font-headline font-semibold text-primary">Bolsillo de Solicitudes</h2>
-        <p className="text-muted-foreground mt-2">Revisa tus datos y proyectos antes de enviar.</p>
+        <p className="text-muted-foreground mt-2">Revisa tus proyectos y completa tus datos para enviar.</p>
       </div>
 
-      <div className="mb-8 p-5 rounded-lg bg-[hsl(var(--color-blanco-puro))]/15 dark:bg-[hsl(var(--card))]/15 shadow-lg">
-        <h3 className="text-xl font-semibold text-accent mb-4 flex items-center gap-2">
-          <UserCircle className="w-6 h-6" /> Tus Datos de Contacto
-        </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {personalDataDisplayOrder.map((key) => {
-            const value = personalData[key];
-            return (
-              <div key={key} className="p-3 bg-[hsl(var(--background))]/20 rounded-md text-sm">
-                <span className={cn(summaryItemLabelClass, "text-accent/90")}>{formatPersonalLabel(key)}:</span>
-                <p className={cn(summaryItemTextClass, "whitespace-pre-wrap pt-0.5")}>
-                  {value && String(value).trim() !== '' ? value : "No especificado"}
-                </p>
-              </div>
-            )
-          })}
+      {/* Contact Form Area */}
+      {showContactForm && (
+        <div className="mb-10 p-0 md:p-6 rounded-lg bg-background/10 dark:bg-card/10">
+          <ContactFormSection
+            personalData={personalData}
+            updatePersonalData={updatePersonalData}
+            onFormSubmit={handleContactFormSubmit}
+            title={areEssentialDetailsFilled ? "Editar Datos de Contacto" : "Completa Tus Datos de Contacto"}
+            description={areEssentialDetailsFilled ? "Modifica tu información de contacto si es necesario." : "Necesitamos esta información para contactarte sobre tus proyectos."}
+            submitButtonText={areEssentialDetailsFilled ? "Actualizar Datos" : "Guardar y Continuar"}
+          />
         </div>
-         {(!personalData.fullName || !personalData.email) && (
-            <Button 
-                variant="link" 
-                onClick={onEditPersonalData} 
-                className="text-sm text-destructive hover:text-destructive/80 mt-3 px-0 flex items-center gap-1"
-            >
-              <Edit3 className="w-3.5 h-3.5"/>
-              Por favor, completa tu nombre y email.
-            </Button>
-        )}
-      </div>
+      )}
 
+      {/* Personal Data Summary (shown when form is hidden) */}
+      {!showContactForm && areEssentialDetailsFilled && (
+        <div className="mb-8 p-5 rounded-lg bg-[hsl(var(--color-blanco-puro))]/15 dark:bg-[hsl(var(--card))]/15 shadow-lg">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-xl font-semibold text-accent flex items-center gap-2">
+              <UserCircle className="w-6 h-6" /> Tus Datos de Contacto
+            </h3>
+            <Button variant="outline" size="sm" onClick={() => setShowContactForm(true)} className="gap-1.5 text-xs">
+              <Edit3 className="w-3.5 h-3.5" /> Editar
+            </Button>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {personalDataDisplayOrder.map((key) => {
+              const value = personalData[key];
+              return (
+                <div key={key} className="p-3 bg-[hsl(var(--background))]/20 rounded-md text-sm">
+                  <span className={cn(summaryItemLabelClass, "text-accent/90")}>{formatPersonalLabel(key)}:</span>
+                  <p className={cn(summaryItemTextClass, "whitespace-pre-wrap pt-0.5")}>
+                    {value && String(value).trim() !== '' ? value : "No especificado"}
+                  </p>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+      
+      {!showContactForm && !areEssentialDetailsFilled && projectPocket.length > 0 && (
+         <div className="mb-8 p-5 rounded-lg bg-destructive/10 dark:bg-destructive/20 shadow-lg border border-destructive/50">
+            <div className="flex items-center text-destructive mb-3">
+                <ShieldAlert className="w-6 h-6 mr-3"/>
+                <h3 className="text-xl font-semibold">Datos de Contacto Incompletos</h3>
+            </div>
+            <p className="text-destructive/90 mb-4 text-sm">
+                Por favor, completa tu nombre completo y email para poder enviar tus solicitudes.
+            </p>
+            <Button variant="destructive" onClick={() => setShowContactForm(true)} className="gap-1.5">
+                <Edit3 className="w-4 h-4" /> Completar Datos Ahora
+            </Button>
+        </div>
+      )}
+
+
+      {/* Project Pocket Display */}
       <h3 className="text-xl font-semibold text-primary mb-4">Proyectos en tu Bolsillo ({projectPocket.length})</h3>
       {projectPocket.length === 0 ? (
         <p className="text-muted-foreground text-center py-4">Aún no has añadido proyectos a tu bolsillo.</p>
@@ -223,7 +282,7 @@ export default function RequestPocketSection({
         <Button 
             onClick={handleSendToWhatsApp} 
             className="w-full sm:w-auto px-6 py-3 text-lg font-semibold"
-            disabled={projectPocket.length === 0 || !personalData.fullName || !personalData.email}
+            disabled={projectPocket.length === 0 || !areEssentialDetailsFilled || showContactForm}
         >
           <MessageSquare className="mr-2 h-5 w-5" />
           Enviar Todo a WhatsApp
@@ -237,4 +296,3 @@ export default function RequestPocketSection({
     </GlassCard>
   );
 }
-
