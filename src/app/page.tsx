@@ -8,6 +8,7 @@ import HeroSection from "@/components/sections/HeroSection";
 import ProjectDesignerSection from "@/components/sections/ProjectDesignerSection";
 import ContactFormSection from "@/components/sections/ContactFormSection";
 import SummarySection from "@/components/sections/SummarySection";
+import SuccessStoriesSection from "@/components/sections/SuccessStoriesSection"; // Added import
 import type { ProjectData, StepKey } from "@/lib/types";
 import { initialProjectData } from "@/lib/types";
 import useLocalStorage from "@/hooks/useLocalStorage";
@@ -67,9 +68,12 @@ export default function Home() {
 
 
       <Header />
-      <main className="flex-grow container mx-auto px-4 py-8 md:py-12 flex flex-col items-center relative z-10">
+      <main className="flex-grow container mx-auto px-4 py-8 md:py-12 flex flex-col items-center relative z-10 w-full">
         {currentStep === "hero" && (
-          <HeroSection onStartDesigning={() => navigateTo("type")} />
+          <>
+            <HeroSection onStartDesigning={() => navigateTo("type")} />
+            <SuccessStoriesSection />
+          </>
         )}
         {currentStep === "type" && (
           <ProjectDesignerSection 
