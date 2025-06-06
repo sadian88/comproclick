@@ -85,12 +85,11 @@ export default function Home() {
   };
 
   const resetToHero = () => {
-    setCurrentStep("hero");
-    window.scrollTo(0, 0);
+    navigateTo("hero");
   };
 
   const handleStartDesigning = () => {
-    navigateTo("projectDesigner"); // Directly to project designer
+    navigateTo("projectDesigner");
   };
 
 
@@ -118,7 +117,7 @@ export default function Home() {
         }
       `}</style>
 
-      <Header onLogoClick={resetToHero} />
+      <Header onLogoClick={resetToHero} onNavigateToDesigner={handleStartDesigning} />
       <main className="flex-grow container mx-auto px-4 py-8 md:py-12 flex flex-col items-center relative z-10 w-full">
         {currentStep === "hero" && (
           <>
@@ -126,7 +125,6 @@ export default function Home() {
             <SuccessStoriesSection />
           </>
         )}
-        {/* PersonalDetails step removed from direct navigation */}
         {currentStep === "projectDesigner" && (
           <ProjectDesignerSection 
             projectData={currentProjectData} 
@@ -138,12 +136,11 @@ export default function Home() {
         {currentStep === "requestPocket" && (
           <RequestPocketSection 
             personalData={personalData}
-            updatePersonalData={updatePersonalData} // Pass updater
+            updatePersonalData={updatePersonalData} 
             projectPocket={projectPocket}
             onClearAllData={clearAllData}
             onAddNewProject={() => navigateTo("projectDesigner")}
             onRemoveProject={removeProjectFromPocket}
-            // onEditPersonalData is handled internally now
           />
         )}
       </main>
@@ -151,3 +148,4 @@ export default function Home() {
     </div>
   );
 }
+
