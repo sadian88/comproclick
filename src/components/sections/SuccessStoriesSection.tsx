@@ -13,28 +13,35 @@ const successStories = [
   {
     clientName: "Camisetia",
     description: "", 
-    imageUrl: "https://placehold.co/600x400.png",
+    imageUrl: "/img/exitos/1.png",
     imageHint: "ecommerce clothing",
     projectUrl: "#"
   },
   {
     clientName: "Innovatech Corp",
     description: "", 
-    imageUrl: "https://placehold.co/600x400.png", 
+    imageUrl: "/img/exitos/2.png", 
     imageHint: "corporate website",
     projectUrl: "#"
   },
   {
     clientName: "GourmetGo App",
     description: "", 
-    imageUrl: "https://placehold.co/600x400.png", 
+    imageUrl: "/img/exitos/3.png", 
     imageHint: "food delivery app",
     projectUrl: "#"
   },
   {
     clientName: "DataViz Solutions",
     description: "", 
-    imageUrl: "https://placehold.co/600x400.png", 
+    imageUrl: "/img/exitos/4.png", 
+    imageHint: "analytics dashboard",
+    projectUrl: "#"
+  },
+  {
+    clientName: "Another Success",
+    description: "", 
+    imageUrl: "/img/exitos/5.png", 
     imageHint: "analytics dashboard",
     projectUrl: "#"
   }
@@ -72,7 +79,7 @@ export default function SuccessStoriesSection() {
                         data-ai-hint={story.imageHint}
                       />
                     </div>
-                    <div className="p-6 flex flex-col flex-grow">
+                    <div className="p-4 flex flex-col flex-grow">
                       <h3 className="text-xl font-semibold mb-3 text-foreground">{story.clientName}</h3>
                     </div>
                   </GlassCard>

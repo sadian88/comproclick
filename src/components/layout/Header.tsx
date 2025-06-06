@@ -38,7 +38,7 @@ export default function Header({ onLogoClick, onNavigateToDesigner }: HeaderProp
             className="text-2xl md:text-3xl font-headline font-bold text-primary hover:text-accent transition-colors duration-300 flex items-center gap-2"
             aria-label="Volver a la página de inicio de Compro.click"
           >
-             <img src="/logo.jpeg" alt="Logo Compro.click" className="h-10 w-auto" />
+             <img src="/img/logo.png" alt="Logo Compro.click" className="h-10 w-auto" />
           </Link>
 
           {/* Contenedor para Menú de Escritorio, Redes Sociales y Botón Hamburguesa */}
