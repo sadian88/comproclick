@@ -7,19 +7,32 @@ import GlassCard from '@/components/ui/GlassCard';
 const successStories = [
   {
     clientName: "Camisetia",
-    description: "Desarrollamos una plataforma de e-commerce intuitiva y personalizable para la venta de ropa, permitiendo a los usuarios diseñar y comprar sus propias prendas.",
+    description: "", // No description as requested
     imageUrl: "https://placehold.co/600x400.png",
-    imageHint: "ecommerce clothing", // Hint for Unsplash, based on provided image
-    projectUrl: "#" // Placeholder link, can be updated later
+    imageHint: "ecommerce clothing",
+    projectUrl: "#"
   },
-  // You can add more success stories here in the future
-  // {
-  //   clientName: "Otro Cliente",
-  //   description: "Descripción del proyecto para Otro Cliente.",
-  //   imageUrl: "https://placehold.co/600x400.png",
-  //   imageHint: "technology app",
-  //   projectUrl: "#"
-  // },
+  {
+    clientName: "Innovatech Corp",
+    description: "", // No description as requested
+    imageUrl: "https://placehold.co/600x400.png", // Different hint for potential image replacement
+    imageHint: "corporate website",
+    projectUrl: "#"
+  },
+  {
+    clientName: "GourmetGo App",
+    description: "", // No description as requested
+    imageUrl: "https://placehold.co/600x400.png", // Different hint
+    imageHint: "food delivery app",
+    projectUrl: "#"
+  },
+  {
+    clientName: "DataViz Solutions",
+    description: "", // No description as requested
+    imageUrl: "https://placehold.co/600x400.png", // Different hint
+    imageHint: "analytics dashboard",
+    projectUrl: "#"
+  }
 ];
 
 export default function SuccessStoriesSection() {
@@ -33,9 +46,9 @@ export default function SuccessStoriesSection() {
         <h2 className="text-3xl md:text-4xl font-headline font-bold mb-12 text-center text-primary">
           Casos de Éxito
         </h2>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 justify-center">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 justify-center">
           {successStories.map((story, index) => (
-            <GlassCard key={index} className="flex flex-col overflow-hidden w-full max-w-md mx-auto"> {/* Added max-w-md and mx-auto for single item centering */}
+            <GlassCard key={index} className="flex flex-col overflow-hidden w-full max-w-sm mx-auto"> {/* Adjusted max-w and grid for more items */}
               <div className="relative w-full h-48 md:h-56">
                 <Image
                   src={story.imageUrl}
@@ -47,7 +60,9 @@ export default function SuccessStoriesSection() {
               </div>
               <div className="p-6 flex flex-col flex-grow">
                 <h3 className="text-xl font-semibold mb-3 text-foreground">{story.clientName}</h3>
-                <p className="text-muted-foreground text-sm mb-4 flex-grow">{story.description}</p>
+                {story.description && ( // Conditionally render description only if it exists
+                  <p className="text-muted-foreground text-sm mb-4 flex-grow">{story.description}</p>
+                )}
                 {/* 
                 // Uncomment if you want a "View Project" button 
                 <Button 
