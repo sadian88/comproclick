@@ -108,11 +108,14 @@ export default function RequestPocketSection({
   const areEssentialDetailsFilledInProp = !!(personalData.fullName && personalData.fullName.trim() !== '' && personalData.email && personalData.email.trim() !== '');
 
   useEffect(() => {
+    // Show form if there are projects but essential personal details are missing.
+    // Hide form if essential details are filled, regardless of projects (user can still choose to edit).
     if (projectPocket.length > 0 && !areEssentialDetailsFilledInProp) {
       setShowContactForm(true);
     } else if (areEssentialDetailsFilledInProp) {
       setShowContactForm(false); 
     }
+    // If no projects, form shouldn't show anyway based on overall page structure.
   }, [personalData.fullName, personalData.email, projectPocket.length, areEssentialDetailsFilledInProp]);
 
   const generateWhatsAppMessage = (currentPersonalData: PersonalData) => {
@@ -154,15 +157,17 @@ export default function RequestPocketSection({
   };
 
   const handleContactDataSavedAndSend = (submittedData: ContactFormData) => {
-    setIsSubmittingViaParent(true);
+    setIsSubmittingViaParent(true); // Indicate parent is handling submission logic
+    // Update personalData state via prop - this is now done by ContactFormSection's internal submit
+    // The parent (page.tsx) will re-render with updated personalData from useLocalStorage
+
     const essentialsFilledFromSubmit = !!(submittedData.fullName && submittedData.fullName.trim() !== '' && submittedData.email && submittedData.email.trim() !== '');
 
     if (essentialsFilledFromSubmit && projectPocket.length > 0) {
-      // Construct PersonalData object from the fresh submittedData for the message
       const freshPersonalDataForMessage: PersonalData = {
         fullName: submittedData.fullName,
         email: submittedData.email,
-        phone: submittedData.phone || '', // Ensure undefined becomes empty string if needed by generateWhatsAppMessage
+        phone: submittedData.phone || '',
         companyName: submittedData.companyName || '',
         country: submittedData.country || '',
       };
@@ -173,7 +178,7 @@ export default function RequestPocketSection({
         title: "Información Enviada",
         description: "Tus datos y proyectos se han preparado para enviar por WhatsApp.",
       });
-      // setShowContactForm(false); // This is handled by useEffect based on personalData prop
+      // setShowContactForm(false); // Let useEffect handle this based on updated props
     } else {
       toast({
         title: "Faltan Datos Críticos",
@@ -181,19 +186,19 @@ export default function RequestPocketSection({
         variant: "destructive",
       });
       if (!essentialsFilledFromSubmit) {
-        setShowContactForm(true); 
+        setShowContactForm(true); // Explicitly keep form open if critical data *still* missing
       }
     }
-    setIsSubmittingViaParent(false);
+     setIsSubmittingViaParent(false); // Reset submission indicator
   };
   
   const summaryItemTextClass = "text-foreground";
   const summaryItemLabelClass = "font-semibold text-primary text-sm";
 
-  if (projectPocket.length === 0 && !showContactForm) {
+  if (projectPocket.length === 0 && !showContactForm) { // Only show empty state if form is also not meant to be shown
     return (
         <GlassCard className="w-full max-w-2xl mx-auto my-8 text-center">
-             <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-12 h-12 text-primary mx-auto mb-3"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg> {/* Replaced ListChecks with FileText for semantic "empty pocket" */}
+             <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-12 h-12 text-primary mx-auto mb-3"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
             <h2 className="text-2xl md:text-3xl font-headline font-semibold text-primary">Bolsillo de Solicitudes Vacío</h2>
             <p className="text-muted-foreground mt-2 mb-6">Aún no has añadido proyectos. ¡Empieza a diseñar!</p>
             <Button onClick={onAddNewProject} className="px-6 py-3">
@@ -204,13 +209,14 @@ export default function RequestPocketSection({
     )
   }
 
+  // Determine button text and if WhatsApp icon should be included
   const submitButtonText = areEssentialDetailsFilledInProp ? "Actualizar y Enviar a WhatsApp" : "Guardar y Enviar a WhatsApp";
   const includeWhatsAppIcon = submitButtonText.toLowerCase().includes("whatsapp");
 
   return (
     <GlassCard className="w-full max-w-4xl mx-auto my-8">
       <div className="text-center mb-8">
-        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-12 h-12 text-primary mx-auto mb-3"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg> {/* Replaced ListChecks */}
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-12 h-12 text-primary mx-auto mb-3"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
         <h2 className="text-2xl md:text-3xl font-headline font-semibold text-primary">Bolsillo de Solicitudes</h2>
         <p className="text-muted-foreground mt-2">
           {areEssentialDetailsFilledInProp && projectPocket.length > 0 
@@ -219,16 +225,18 @@ export default function RequestPocketSection({
         </p>
       </div>
 
+      {/* Contact Form Area: Shown if showContactForm is true AND there are projects */}
       {showContactForm && projectPocket.length > 0 && (
         <div className="mb-10 p-0 md:p-6 rounded-lg bg-background/10 dark:bg-card/10">
           <ContactFormSection
-            personalData={personalData}
-            updatePersonalData={updatePersonalData}
-            onFormSubmit={handleContactDataSavedAndSend} 
-            formMethods={formMethods} 
-            title={areEssentialDetailsFilledInProp ? "Editar Datos de Contacto" : "Completa Tus Datos para Enviar"}
-            description={areEssentialDetailsFilledInProp ? "Modifica tu información si es necesario." : "Necesitamos esta información para contactarte."}
+            personalData={personalData} // Pass current personalData for form defaults
+            updatePersonalData={updatePersonalData} // Pass updater function
+            onFormSubmit={handleContactDataSavedAndSend} // Callback after form's internal submit
+            formMethods={formMethods} // Pass react-hook-form methods
+            title={areEssentialDetailsFilledInProp ? "Editar Datos de Contacto" : ""}
+            description={areEssentialDetailsFilledInProp ? "Modifica tu información si es necesario." : ""}
           />
+          {/* Buttons are now part of this section when form is shown */}
           <div className="flex flex-col sm:flex-row justify-end items-center pt-6 gap-4 mt-0 sm:mt-0 px-0 md:px-6">
              <Button variant="outline" onClick={onAddNewProject} className="w-full sm:w-auto">
                 <PlusCircle className="mr-2 h-5 w-5" />
@@ -236,7 +244,7 @@ export default function RequestPocketSection({
             </Button>
             <Button 
                 type="submit" 
-                form="contact-form" 
+                form="contact-form" // Target the form inside ContactFormSection
                 disabled={formMethods.formState.isSubmitting || isSubmittingViaParent || projectPocket.length === 0} 
                 className="w-full sm:w-auto px-6 py-3 text-lg"
             >
@@ -248,6 +256,7 @@ export default function RequestPocketSection({
         </div>
       )}
 
+      {/* Display Personal Data Summary (if form is not shown and essentials are filled) */}
       {!showContactForm && areEssentialDetailsFilledInProp && (
         <div className="mb-8 p-5 rounded-lg bg-[hsl(var(--color-blanco-puro))]/15 dark:bg-[hsl(var(--card))]/15 shadow-lg">
           <div className="flex justify-between items-center mb-4">
@@ -274,6 +283,7 @@ export default function RequestPocketSection({
         </div>
       )}
       
+      {/* Alert for Incomplete Contact Data (if form is not shown, but essentials are missing AND there are projects) */}
       {!showContactForm && !areEssentialDetailsFilledInProp && projectPocket.length > 0 && (
          <div className="mb-8 p-5 rounded-lg bg-destructive/10 dark:bg-destructive/20 shadow-lg border border-destructive/50">
             <div className="flex items-center text-destructive mb-3">
@@ -289,8 +299,9 @@ export default function RequestPocketSection({
         </div>
       )}
 
+      {/* Project Pocket Display */}
       <h3 className="text-xl font-semibold text-primary mb-4">Proyectos en tu Bolsillo ({projectPocket.length})</h3>
-      {projectPocket.length === 0 ? ( 
+      {projectPocket.length === 0 ? ( // This condition might be redundant if the whole component doesn't render for 0 projects
         <p className="text-muted-foreground text-center py-4">Aún no has añadido proyectos a tu bolsillo.</p>
       ) : (
         <div className="space-y-6 mb-8">
@@ -332,23 +343,26 @@ export default function RequestPocketSection({
         </div>
       )}
 
+      {/* Action Buttons (when contact form is NOT shown, but there are projects) */}
       {!showContactForm && projectPocket.length > 0 && (
         <div className="flex flex-col sm:flex-row justify-between items-center pt-6 gap-4 border-t border-border/50 mt-8">
             <Button variant="outline" onClick={onAddNewProject} className="w-full sm:w-auto px-6 py-3">
                 <PlusCircle className="mr-2 h-5 w-5" />
                 Añadir Otro Proyecto
             </Button>
+            {/* This button is for sending if data is already filled and form is hidden */}
             {areEssentialDetailsFilledInProp && (
                  <Button 
                     onClick={() => {
-                        setIsSubmittingViaParent(true);
-                        const message = generateWhatsAppMessage(personalData); // Use prop here, as form is not active
+                        setIsSubmittingViaParent(true); // Indicate submission
+                        // Use the personalData prop here as form is not active
+                        const message = generateWhatsAppMessage(personalData); 
                         const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${message}`;
                         window.open(url, "_blank");
                         toast({title: "Información Enviada", description: "Preparado para enviar por WhatsApp."});
-                        setIsSubmittingViaParent(false);
+                        setIsSubmittingViaParent(false); // Reset
                     }} 
-                    disabled={isSubmittingViaParent || projectPocket.length === 0}
+                    disabled={isSubmittingViaParent || projectPocket.length === 0} // Disable if submitting or no projects
                     className="w-full sm:w-auto px-6 py-3 text-lg">
                     {isSubmittingViaParent && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     <MessageSquare className="mr-2 h-5 w-5" />
@@ -357,11 +371,15 @@ export default function RequestPocketSection({
             )}
         </div>
       )}
-       <div className="mt-8 text-center">
-        <Button variant="link" onClick={onClearAllData} className="text-muted-foreground hover:text-destructive">
-          Limpiar bolsillo y datos (empezar de nuevo)
-        </Button>
-      </div>
+
+       {/* Clear All Data Button - always available if there are projects or contact form might be shown */}
+       {(projectPocket.length > 0 || showContactForm) && (
+         <div className="mt-8 text-center">
+            <Button variant="link" onClick={onClearAllData} className="text-muted-foreground hover:text-destructive">
+              Limpiar bolsillo y datos (empezar de nuevo)
+            </Button>
+          </div>
+        )}
     </GlassCard>
   );
 }
