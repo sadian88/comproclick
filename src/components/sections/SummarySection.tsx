@@ -30,7 +30,7 @@ const formatLabel = (key: string): string => {
 };
 
 const formatValue = (key: keyof ProjectData, value: string | undefined): string => {
-  if (value === undefined || value === null || value === '') return "No especificado";
+  if (value === undefined || value === null || value.trim() === '') return "No especificado";
   
   if (key === 'projectType') {
     const map: Record<string, string> = { website: "Sitio web", mobile_app: "App móvil", other: "Otro (ver detalle)" };
@@ -52,24 +52,33 @@ export default function SummarySection({ projectData, onPrev, onClearData }: Sum
   const generateWhatsAppMessage = () => {
     let message = "Hola IA Digital Designs 👋, estoy interesado en un proyecto:\n\n";
     
-    const displayOrder: (keyof ProjectData)[] = [
-        'projectType', 'projectTypeOther', 'projectCategory', 'projectCategoryOther', 'timeline',
-        'fullName', 'companyName', 'email', 'phone', 'country', 'idea'
+    // Define the order and fields to include in the message
+    const fieldsToInclude: (keyof ProjectData)[] = [
+        'projectType', 
+        // Conditionally include projectTypeOther
+        ...(projectData.projectType === 'other' && projectData.projectTypeOther ? ['projectTypeOther' as const] : []),
+        'projectCategory', 
+        // Conditionally include projectCategoryOther
+        ...(projectData.projectCategory === 'other' && projectData.projectCategoryOther ? ['projectCategoryOther' as const] : []),
+        'timeline',
+        'fullName', 
+        'companyName', 
+        'email', 
+        'phone', 
+        'country', 
+        'idea' // This will be the user's final idea (original or what they typed/accepted after AI)
     ];
 
-    displayOrder.forEach(key => {
+    fieldsToInclude.forEach(key => {
         const value = projectData[key];
-        if (value && value.trim() !== '') {
-            // Use the idea refined by AI if available and user hasn't cleared it or it's different from original
-            const ideaToUse = key === 'idea' && projectData.refinedIdea && projectData.refinedIdea !== projectData.idea ? projectData.refinedIdea : value;
-            message += `*${formatLabel(key)}:* ${formatValue(key, ideaToUse)}\n`;
+        if (value && String(value).trim() !== '') {
+            message += `*${formatLabel(key)}:* ${formatValue(key, value)}\n`;
         }
     });
     
-    if (projectData.refinedIdea && projectData.idea !== projectData.refinedIdea) {
-        // This is already handled if 'idea' becomes the refined idea.
-        // If we want to show both, this would be the place.
-        // For now, assume 'idea' field might get updated by refined version by user action.
+    // Add refinedIdea separately if it exists, is not empty, and is different from the main idea
+    if (projectData.refinedIdea && projectData.refinedIdea.trim() !== '' && projectData.refinedIdea !== projectData.idea) {
+        message += `*${formatLabel('refinedIdea')}:* ${projectData.refinedIdea}\n`;
     }
 
     message += "\n¡Espero su contacto para discutir más detalles!";
@@ -80,10 +89,12 @@ export default function SummarySection({ projectData, onPrev, onClearData }: Sum
     const message = generateWhatsAppMessage();
     const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${message}`;
     window.open(url, "_blank");
-    // Optionally clear data after sending
-    // onClearData();
-    // alert("Proyecto enviado. Nos pondremos en contacto pronto.");
   };
+
+  const displayOrder: (keyof ProjectData)[] = [
+    'projectType', 'projectTypeOther', 'projectCategory', 'projectCategoryOther', 'timeline',
+    'fullName', 'companyName', 'email', 'phone', 'country', 'idea'
+  ];
 
   return (
     <GlassCard className="w-full max-w-3xl mx-auto my-12 shadow-xl">
@@ -94,17 +105,31 @@ export default function SummarySection({ projectData, onPrev, onClearData }: Sum
       </div>
       
       <div className="space-y-4 mb-8">
-        {Object.entries(projectData).map(([key, value]) => {
-          if (!value || value.trim() === '' || key === 'refinedIdea' && value === projectData.idea) return null; // Skip empty or redundant refined idea
-          const displayValue = key === 'idea' && projectData.refinedIdea && projectData.refinedIdea !== projectData.idea ? projectData.refinedIdea : value;
-          
-          return (
-            <div key={key} className="p-3 bg-background/50 rounded-md border border-border">
-              <span className="font-semibold text-primary">{formatLabel(key)}:</span>
-              <p className="text-foreground whitespace-pre-wrap pl-2">{formatValue(key as keyof ProjectData, displayValue as string)}</p>
-            </div>
-          );
+        {displayOrder.map((key) => {
+          const value = projectData[key];
+
+          // Conditional display for "Other" fields
+          if (key === 'projectTypeOther' && projectData.projectType !== 'other') return null;
+          if (key === 'projectCategoryOther' && projectData.projectCategory !== 'other') return null;
+
+          if (value && String(value).trim() !== '') {
+            return (
+              <div key={key} className="p-3 bg-background/50 rounded-md border border-border">
+                <span className="font-semibold text-primary">{formatLabel(key)}:</span>
+                <p className="text-foreground whitespace-pre-wrap pl-2">{formatValue(key, value as string)}</p>
+              </div>
+            );
+          }
+          return null;
         })}
+
+        {/* Display refinedIdea separately if it exists, is not empty, and is different from the main idea */}
+        {projectData.refinedIdea && projectData.refinedIdea.trim() !== '' && projectData.refinedIdea !== projectData.idea && (
+          <div key="refinedIdea" className="p-3 bg-accent/10 rounded-md border border-accent/30">
+            <span className="font-semibold text-accent">{formatLabel('refinedIdea')}:</span>
+            <p className="text-foreground whitespace-pre-wrap pl-2">{projectData.refinedIdea}</p>
+          </div>
+        )}
       </div>
 
       <div className="flex flex-col sm:flex-row justify-between items-center pt-6 gap-4">
