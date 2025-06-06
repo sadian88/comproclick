@@ -48,10 +48,6 @@
     --ring: 223 69.3% 55.4%; /* Primary color for rings */
 
     --radius: 0.75rem; /* Slightly more rounded */
-
-    /* Mouse tracking variables */
-    --mouse-x: 50vw; /* Initial center X position */
-    --mouse-y: 50vh; /* Initial center Y position */
   }
 
   .dark {
@@ -93,18 +89,10 @@
   }
   body {
     @apply bg-background text-foreground;
-    /* Layered backgrounds: dynamic radial gradient on top of static linear gradient */
-    background-image:
-      radial-gradient(
-        800px circle at var(--mouse-x) var(--mouse-y),
-        hsl(var(--color-morado-electrico) / 0.25), /* Increased opacity */
-        hsl(var(--color-turquesa-claro) / 0.25),   /* Increased opacity */
-        transparent 70%                            /* Larger colored area before fade */
-      ),
-      linear-gradient(135deg, hsl(var(--color-azul-cielo-super-suave)) 0%, hsl(var(--color-lila-pastel)/0.35) 50%, hsl(var(--color-rosa-claro)/0.2) 100%); /* Base static gradient */
-    background-attachment: fixed, fixed; /* Both fixed */
-    background-size: cover, cover; /* Ensure both cover the viewport */
-    background-repeat: no-repeat, no-repeat; /* Prevent tiling */
+    /* Removed complex background-image layers for a simpler, lighter background */
+    background-attachment: fixed;
+    background-size: cover;
+    background-repeat: no-repeat;
   }
 }
 

@@ -12,7 +12,6 @@ import SuccessStoriesSection from "@/components/sections/SuccessStoriesSection";
 import type { ProjectData, StepKey } from "@/lib/types";
 import { initialProjectData } from "@/lib/types";
 import useLocalStorage from "@/hooks/useLocalStorage";
-import ThreeDShape from "@/components/ui/ThreeDShape";
 
 export default function Home() {
   const [currentStep, setCurrentStep] = useState<StepKey>("hero");
@@ -36,24 +35,7 @@ export default function Home() {
     };
   }, [projectData, currentStep]);
 
-  useEffect(() => {
-    const handleMouseMove = (event: MouseEvent) => {
-      if (typeof window !== "undefined") {
-        const { clientX, clientY } = event;
-        document.documentElement.style.setProperty('--mouse-x', `${clientX}px`);
-        document.documentElement.style.setProperty('--mouse-y', `${clientY}px`);
-      }
-    };
-    if (typeof window !== "undefined") {
-      window.addEventListener('mousemove', handleMouseMove);
-    }
-    return () => {
-      if (typeof window !== "undefined") {
-        window.removeEventListener('mousemove', handleMouseMove);
-      }
-    };
-  }, []);
-
+  // Removed useEffect for mousemove tracking as the dynamic gradient is removed
 
   const updateProjectData = (field: keyof ProjectData, value: string) => {
     setProjectData((prev) => ({ ...prev, [field]: value }));
@@ -76,16 +58,20 @@ export default function Home() {
 
 
   return (
-    <div className="min-h-screen flex flex-col bg-background text-foreground font-body relative overflow-x-hidden">
-      <div className="fixed -top-40 -left-40 opacity-30 dark:opacity-20 -z-10 animate-pulse">
-        <ThreeDShape type="sphere" size={400} color="hsl(var(--color-azul-cielo-suave))" />
-      </div>
-      <div className="fixed -bottom-60 -right-60 opacity-20 dark:opacity-10 -z-10 animate-pulse animation-delay-1000">
-        <ThreeDShape type="polyhedron" size={500} color="hsl(var(--color-lila-pastel))" />
-      </div>
-       <div className="fixed top-1/2 left-1/4 opacity-20 dark:opacity-10 -z-10 animate-pulse animation-delay-500 transform -translate-y-1/2">
-        <ThreeDShape type="crystal" size={300} color="hsl(var(--color-rosa-claro))" />
-      </div>
+    <div className="min-h-screen flex flex-col bg-transparent text-foreground font-body relative overflow-x-hidden">
+      {/* New soft blurred background shapes */}
+      <div
+        className="fixed -z-10 top-[-30%] right-[-30%] w-[70vw] h-[70vw] rounded-full bg-[hsl(var(--color-azul-cielo-suave)/0.15)] filter blur-3xl"
+        aria-hidden="true"
+      />
+      <div
+        className="fixed -z-10 bottom-[-20%] left-[-20%] w-[60vw] h-[60vw] rounded-full bg-[hsl(var(--color-azul-cielo-suave)/0.1)] filter blur-3xl"
+        aria-hidden="true"
+      />
+       <div
+        className="fixed -z-10 top-[10%] left-[5%] w-[40vw] h-[40vw] rounded-full bg-[hsl(var(--color-lila-pastel)/0.1)] filter blur-3xl"
+        aria-hidden="true"
+      />
 
 
       <Header onLogoClick={resetToHero} />
