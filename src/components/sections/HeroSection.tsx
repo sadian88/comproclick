@@ -7,6 +7,15 @@ interface HeroSectionProps {
 }
 
 export default function HeroSection({ onStartDesigning }: HeroSectionProps) {
+  const serviceCardColors = [
+    "bg-[hsl(var(--color-azul-cielo-suave)/0.25)] dark:bg-[hsl(var(--color-azul-cielo-suave)/0.2)]",
+    "bg-[hsl(var(--color-lila-pastel)/0.25)] dark:bg-[hsl(var(--color-lila-pastel)/0.2)]",
+    "bg-[hsl(var(--color-rosa-claro)/0.25)] dark:bg-[hsl(var(--color-rosa-claro)/0.2)]",
+    "bg-[hsl(var(--color-turquesa-claro)/0.25)] dark:bg-[hsl(var(--color-turquesa-claro)/0.2)]",
+    "bg-[hsl(var(--color-azul-cielo-super-suave)/0.3)] dark:bg-[hsl(var(--color-azul-cielo-super-suave)/0.25)]",
+    "bg-[hsl(var(--color-gris-translucido)/0.25)] dark:bg-[hsl(var(--color-gris-translucido)/0.2)]"
+  ];
+
   return (
     <section className="py-16 md:py-24 text-center relative overflow-hidden min-h-[calc(80vh-var(--header-height,100px))] flex flex-col justify-center items-center">
       {/* Removed decorative ThreeDShape components to align with simpler background style */}
@@ -36,10 +45,10 @@ export default function HeroSection({ onStartDesigning }: HeroSectionProps) {
             "Automatización n8n",
             "Tiendas online",
             "Webs para pedidos",
-          ].map((service) => (
+          ].map((service, index) => (
             <div 
               key={service} 
-              className="p-4 h-24 flex items-center justify-center text-center bg-[hsl(var(--color-blanco-puro))/0.25] dark:bg-[hsl(var(--card))/0.25] backdrop-blur-md rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300"
+              className={`p-4 h-24 flex items-center justify-center text-center backdrop-blur-md rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 ${serviceCardColors[index % serviceCardColors.length]}`}
             >
               {service}
             </div>
