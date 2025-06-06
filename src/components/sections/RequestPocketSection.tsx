@@ -6,11 +6,12 @@ import { Button } from "@/components/ui/button";
 import GlassCard from "@/components/ui/GlassCard";
 import { MessageSquare, PlusCircle, Trash2, UserCircle, ListChecks, Edit3, ShieldCheck, ShieldAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
-import ContactFormSection from "./ContactFormSection"; // Import ContactFormSection
+import ContactFormSection from "./ContactFormSection"; 
+import { useToast } from "@/hooks/use-toast";
 
 interface RequestPocketSectionProps {
   personalData: PersonalData;
-  updatePersonalData: (field: keyof PersonalData, value: string) => void; // For ContactForm
+  updatePersonalData: (field: keyof PersonalData, value: string) => void;
   projectPocket: ProjectPocketItem[];
   onClearAllData: () => void;
   onAddNewProject: () => void;
@@ -81,31 +82,18 @@ export default function RequestPocketSection({
 }: RequestPocketSectionProps) {
   
   const [showContactForm, setShowContactForm] = useState(false);
+  const { toast } = useToast();
 
-  // This is calculated on each render based on the current personalData prop
-  const areEssentialDetailsFilled = !!(personalData.fullName && personalData.email);
+  const areEssentialDetailsFilled = !!(personalData.fullName && personalData.fullName.trim() !== '' && personalData.email && personalData.email.trim() !== '');
 
   useEffect(() => {
-    // Determine if form should be shown based on current data
-    const shouldShow = projectPocket.length > 0 && !(personalData.fullName && personalData.email);
-    const currentlyFilled = !!(personalData.fullName && personalData.email);
-
-    if (projectPocket.length > 0 && !currentlyFilled) {
+    if (projectPocket.length > 0 && !areEssentialDetailsFilled) {
       setShowContactForm(true);
-    } else if (currentlyFilled) {
-      // If details become filled (e.g., after form submission and prop update, or loaded from localStorage later),
-      // and the form is currently shown, hide it.
-      // This also handles the case where user clicks "Edit" then fills data.
+    } else if (areEssentialDetailsFilled) {
       setShowContactForm(false); 
     }
-  }, [personalData.fullName, personalData.email, projectPocket.length]);
+  }, [personalData.fullName, personalData.email, projectPocket.length, areEssentialDetailsFilled]);
 
-  const handleContactFormSubmit = () => {
-    // No longer directly setting setShowContactForm(false) here.
-    // The useEffect above will handle hiding the form once `personalData` (props) updates
-    // and `areEssentialDetailsFilled` becomes true.
-  };
-  
   const generateWhatsAppMessage = () => {
     let message = "Hola Compro.click 👋, tengo las siguientes solicitudes de proyecto:\n\n";
     message += "--- MIS DATOS DE CONTACTO ---\n";
@@ -137,6 +125,7 @@ export default function RequestPocketSection({
         message += "\n";
       });
     } else {
+      // This case should ideally not be hit if we're sending, but included for completeness
       message += "Aún no he definido proyectos.\n\n";
     }
 
@@ -144,20 +133,39 @@ export default function RequestPocketSection({
     return encodeURIComponent(message);
   };
 
-  const handleSendToWhatsApp = () => {
-    if (!areEssentialDetailsFilled || projectPocket.length === 0) {
-      if(!areEssentialDetailsFilled && projectPocket.length > 0) setShowContactForm(true);
-      return;
-    }
-    const message = generateWhatsAppMessage();
-    const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${message}`;
-    window.open(url, "_blank");
-  };
+  // This function is called when ContactFormSection is submitted
+  const handleSaveAndSend = () => {
+    // personalData should be updated by the time this is called,
+    // due to updatePersonalData being called within ContactFormSection's onSubmit
+    // and React's rendering cycle.
+    // We re-check essential details with the potentially updated personalData prop.
+    const currentAreEssentialDetailsFilled = !!(personalData.fullName && personalData.fullName.trim() !== '' && personalData.email && personalData.email.trim() !== '');
 
+    if (currentAreEssentialDetailsFilled && projectPocket.length > 0) {
+      const message = generateWhatsAppMessage();
+      const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${message}`;
+      window.open(url, "_blank");
+      toast({
+        title: "Información Enviada",
+        description: "Tus datos y proyectos se han preparado para enviar por WhatsApp.",
+      });
+      // The useEffect will hide the form if details are now filled.
+    } else {
+      toast({
+        title: "Faltan Datos Críticos",
+        description: "Por favor, asegúrate de que tu nombre, email y al menos un proyecto estén completos antes de enviar.",
+        variant: "destructive",
+      });
+      if (!currentAreEssentialDetailsFilled) {
+        setShowContactForm(true); // Ensure form stays/becomes visible if details still missing
+      }
+    }
+  };
+  
   const summaryItemTextClass = "text-foreground";
   const summaryItemLabelClass = "font-semibold text-primary text-sm";
 
-  if (projectPocket.length === 0 && !showContactForm) {
+  if (projectPocket.length === 0 && !showContactForm) { // Initial state before any project is added
     return (
         <GlassCard className="w-full max-w-2xl mx-auto my-8 text-center">
              <ListChecks className="w-12 h-12 text-primary mx-auto mb-3" />
@@ -177,24 +185,28 @@ export default function RequestPocketSection({
       <div className="text-center mb-8">
         <ListChecks className="w-12 h-12 text-primary mx-auto mb-3" />
         <h2 className="text-2xl md:text-3xl font-headline font-semibold text-primary">Bolsillo de Solicitudes</h2>
-        <p className="text-muted-foreground mt-2">Revisa tus proyectos y completa tus datos para enviar.</p>
+        <p className="text-muted-foreground mt-2">
+          {areEssentialDetailsFilled && projectPocket.length > 0 
+            ? "Revisa tus proyectos y datos. ¡Listo para enviar!"
+            : "Completa tus datos y revisa tus proyectos para enviar."}
+        </p>
       </div>
 
-      {/* Contact Form Area */}
-      {showContactForm && projectPocket.length > 0 && ( // Only show form if pocket has items
+      {/* Contact Form Area: Shown if essential details are missing OR if user clicks 'Edit' */}
+      {showContactForm && projectPocket.length > 0 && (
         <div className="mb-10 p-0 md:p-6 rounded-lg bg-background/10 dark:bg-card/10">
           <ContactFormSection
             personalData={personalData}
             updatePersonalData={updatePersonalData}
-            onFormSubmit={handleContactFormSubmit}
-            title={areEssentialDetailsFilled ? "Editar Datos de Contacto" : "Completa Tus Datos de Contacto"}
-            description={areEssentialDetailsFilled ? "Modifica tu información de contacto si es necesario." : "Necesitamos esta información para contactarte sobre tus proyectos."}
-            submitButtonText={areEssentialDetailsFilled ? "Actualizar Datos" : "Guardar y Continuar"}
+            onFormSubmit={handleSaveAndSend} // This will now also trigger WhatsApp
+            title={areEssentialDetailsFilled ? "Editar Datos de Contacto" : "Completa Tus Datos para Enviar"}
+            description={areEssentialDetailsFilled ? "Modifica tu información si es necesario. Al guardar, se preparará el envío por WhatsApp." : "Necesitamos esta información para contactarte. Al guardar, se preparará el envío por WhatsApp."}
+            submitButtonText={areEssentialDetailsFilled ? "Actualizar y Enviar a WhatsApp" : "Guardar y Enviar a WhatsApp"}
           />
         </div>
       )}
 
-      {/* Personal Data Summary (shown when form is hidden or details are filled) */}
+      {/* Personal Data Summary (shown when form is hidden AND details are filled) */}
       {!showContactForm && areEssentialDetailsFilled && (
         <div className="mb-8 p-5 rounded-lg bg-[hsl(var(--color-blanco-puro))]/15 dark:bg-[hsl(var(--card))]/15 shadow-lg">
           <div className="flex justify-between items-center mb-4">
@@ -202,7 +214,7 @@ export default function RequestPocketSection({
               <ShieldCheck className="w-6 h-6 text-green-500" /> Tus Datos de Contacto
             </h3>
             <Button variant="outline" size="sm" onClick={() => setShowContactForm(true)} className="gap-1.5 text-xs">
-              <Edit3 className="w-3.5 h-3.5" /> Editar
+              <Edit3 className="w-3.5 h-3.5" /> Editar Datos
             </Button>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -221,7 +233,7 @@ export default function RequestPocketSection({
         </div>
       )}
       
-      {/* Warning for incomplete data (shown when form is hidden and details are NOT filled) */}
+      {/* Warning for incomplete data (shown when form is hidden and details are NOT filled, but there are projects) */}
       {!showContactForm && !areEssentialDetailsFilled && projectPocket.length > 0 && (
          <div className="mb-8 p-5 rounded-lg bg-destructive/10 dark:bg-destructive/20 shadow-lg border border-destructive/50">
             <div className="flex items-center text-destructive mb-3">
@@ -232,15 +244,14 @@ export default function RequestPocketSection({
                 Por favor, completa tu nombre completo y email para poder enviar tus solicitudes.
             </p>
             <Button variant="destructive" onClick={() => setShowContactForm(true)} className="gap-1.5">
-                <Edit3 className="w-4 h-4" /> Completar Datos Ahora
+                <Edit3 className="w-4 h-4" /> Completar y Enviar
             </Button>
         </div>
       )}
 
-
       {/* Project Pocket Display */}
       <h3 className="text-xl font-semibold text-primary mb-4">Proyectos en tu Bolsillo ({projectPocket.length})</h3>
-      {projectPocket.length === 0 ? ( // This condition should be met by the early return if showContactForm is also false
+      {projectPocket.length === 0 ? ( 
         <p className="text-muted-foreground text-center py-4">Aún no has añadido proyectos a tu bolsillo.</p>
       ) : (
         <div className="space-y-6 mb-8">
@@ -282,19 +293,13 @@ export default function RequestPocketSection({
         </div>
       )}
 
+      {/* Action Buttons: Only Add New Project and Clear All. Send is handled by ContactForm submission */}
       <div className="flex flex-col sm:flex-row justify-between items-center pt-6 gap-4 border-t border-border/50 mt-8">
         <Button variant="outline" onClick={onAddNewProject} className="w-full sm:w-auto px-6 py-3">
           <PlusCircle className="mr-2 h-5 w-5" />
           Añadir Otro Proyecto
         </Button>
-        <Button 
-            onClick={handleSendToWhatsApp} 
-            className="w-full sm:w-auto px-6 py-3 text-lg font-semibold"
-            disabled={projectPocket.length === 0 || !areEssentialDetailsFilled || (showContactForm && projectPocket.length > 0) }
-        >
-          <MessageSquare className="mr-2 h-5 w-5" />
-          Enviar Todo a WhatsApp
-        </Button>
+        {/* The main "Send to WhatsApp" button is removed. Submission of contact form now handles this. */}
       </div>
        <div className="mt-8 text-center">
         <Button variant="link" onClick={onClearAllData} className="text-muted-foreground hover:text-destructive">

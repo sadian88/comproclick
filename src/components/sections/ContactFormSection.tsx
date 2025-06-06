@@ -7,24 +7,24 @@ import GlassCard from "@/components/ui/GlassCard";
 import { useForm, Controller, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Loader2 } from "lucide-react";
+import { Loader2, MessageSquare } from "lucide-react"; // Added MessageSquare for button
 
 interface ContactFormSectionProps {
   personalData: PersonalData;
   updatePersonalData: (field: keyof PersonalData, value: string) => void;
-  onFormSubmit: () => void; // Renamed to onSave, parent (RequestPocketSection) will handle navigation/UI update
-  // onPrev prop is removed
+  onFormSubmit: () => void; 
   title?: string;
   description?: string;
   submitButtonText?: string;
+  isSubmittingPrimaryAction?: boolean; // To show loader from parent
 }
 
 const formSchema = z.object({
-  fullName: z.string().min(2, "Nombre completo es requerido."),
-  companyName: z.string().optional(),
-  phone: z.string().optional(),
-  email: z.string().email("Email inválido."),
-  country: z.string().optional(),
+  fullName: z.string().min(2, "Nombre completo es requerido.").max(100, "Nombre demasiado largo."),
+  companyName: z.string().max(100, "Nombre de empresa demasiado largo.").optional(),
+  phone: z.string().max(30, "Número de teléfono demasiado largo.").optional(),
+  email: z.string().email("Email inválido.").max(100, "Email demasiado largo."),
+  country: z.string().max(50, "Nombre de país demasiado largo.").optional(),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -35,25 +35,38 @@ export default function ContactFormSection({
   onFormSubmit,
   title = "Tus Datos de Contacto",
   description = "Necesitamos esta información para contactarte sobre tus proyectos.",
-  submitButtonText = "Guardar Datos de Contacto"
+  submitButtonText = "Guardar Datos de Contacto",
+  isSubmittingPrimaryAction = false
 }: ContactFormSectionProps) {
-  const { control, handleSubmit, formState: { errors, isSubmitting }, reset } = useForm<FormData>({
+  const { control, handleSubmit, formState: { errors, isSubmitting: isFormSubmitting }, reset, watch } = useForm<FormData>({
     resolver: zodResolver(formSchema),
-    defaultValues: personalData,
+    defaultValues: personalData, // Initialize with current personalData
   });
 
-  // Reset form when personalData prop changes (e.g. loaded from localStorage)
+  // Effect to reset form when personalData prop changes from parent
+  // This ensures the form reflects data loaded from localStorage or external changes.
   React.useEffect(() => {
     reset(personalData);
   }, [personalData, reset]);
 
   const onSubmit: SubmitHandler<FormData> = (data) => {
+    // Update parent state (which should trigger localStorage update via useLocalStorage hook)
     Object.keys(data).forEach(keyStr => {
       const key = keyStr as keyof FormData;
-      updatePersonalData(key as keyof PersonalData, data[key] as string);
+      // Ensure that we only update if the value is actually different,
+      // or if the field is one of the mandatory ones being set.
+      // This helps prevent unnecessary re-renders if data hasn't changed.
+      if (personalData[key as keyof PersonalData] !== data[key]) {
+         updatePersonalData(key as keyof PersonalData, data[key] as string);
+      }
     });
-    onFormSubmit(); // Signal to parent component that form was submitted
+    // Call the callback provided by the parent (RequestPocketSection)
+    // This callback will handle the WhatsApp logic.
+    onFormSubmit(); 
   };
+
+  // Determine if the submit button should include WhatsApp icon
+  const includeWhatsAppIcon = submitButtonText?.toLowerCase().includes("whatsapp");
 
   return (
     <GlassCard className="w-full max-w-3xl mx-auto my-0 shadow-none border-none bg-transparent backdrop-blur-none p-0">
@@ -79,6 +92,7 @@ export default function ContactFormSection({
               <div>
                 <label htmlFor="companyName" className="block text-sm font-medium mb-1">Nombre de empresa (Opcional)</label>
                 <Input id="companyName" {...field} placeholder="Ej: Innovatech Solutions" />
+                 {errors.companyName && <p className="text-sm text-destructive mt-1">{errors.companyName.message}</p>}
               </div>
             )}
           />
@@ -92,6 +106,7 @@ export default function ContactFormSection({
               <div>
                 <label htmlFor="phone" className="block text-sm font-medium mb-1">Teléfono (Opcional)</label>
                 <Input id="phone" type="tel" {...field} placeholder="Ej: +57 300 123 4567" />
+                 {errors.phone && <p className="text-sm text-destructive mt-1">{errors.phone.message}</p>}
               </div>
             )}
           />
@@ -115,14 +130,15 @@ export default function ContactFormSection({
               <div>
                 <label htmlFor="country" className="block text-sm font-medium mb-1">País (Opcional)</label>
                 <Input id="country" {...field} placeholder="Ej: Colombia" />
+                {errors.country && <p className="text-sm text-destructive mt-1">{errors.country.message}</p>}
               </div>
             )}
         />
         
         <div className="flex justify-end items-center pt-4">
-          {/* onPrev button removed */}
-          <Button type="submit" disabled={isSubmitting} className="px-6 py-3">
-            {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+          <Button type="submit" disabled={isFormSubmitting || isSubmittingPrimaryAction} className="px-6 py-3 text-lg">
+            {(isFormSubmitting || isSubmittingPrimaryAction) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {includeWhatsAppIcon && !(isFormSubmitting || isSubmittingPrimaryAction) && <MessageSquare className="mr-2 h-5 w-5" />}
             {submitButtonText}
           </Button>
         </div>
@@ -130,3 +146,5 @@ export default function ContactFormSection({
     </GlassCard>
   );
 }
+
+    
