@@ -54,26 +54,29 @@ export default function SummarySection({ projectData, onPrev, onClearData }: Sum
   const generateWhatsAppMessage = () => {
     let message = "Hola Compro.click 👋, estoy interesado en un proyecto:\n\n";
     
-    const fieldsToInclude: (keyof ProjectData)[] = [
-        'projectType', 
-        ...(projectData.projectType === 'other' && projectData.projectTypeOther ? ['projectTypeOther' as const] : []),
-        'projectCategory', 
-        ...(projectData.projectCategory === 'other' && projectData.projectCategoryOther ? ['projectCategoryOther' as const] : []),
-        'timeline',
-        'fullName', 
-        'companyName', 
-        'email', 
-        'phone', 
-        'country', 
+    const fieldsForWhatsAppMessage: (keyof ProjectData)[] = [
+      // Project Definition
+      ...(projectData.projectType && projectData.projectType.trim() !== '' ? ['projectType' as const] : []),
+      ...(projectData.projectType === 'other' && projectData.projectTypeOther && projectData.projectTypeOther.trim() !== '' ? ['projectTypeOther' as const] : []),
+      ...(projectData.projectCategory && projectData.projectCategory.trim() !== '' ? ['projectCategory' as const] : []),
+      ...(projectData.projectCategory === 'other' && projectData.projectCategoryOther && projectData.projectCategoryOther.trim() !== '' ? ['projectCategoryOther' as const] : []),
+      ...(projectData.timeline && projectData.timeline.trim() !== '' ? ['timeline' as const] : []),
+      
+      // Contact Info
+      ...(projectData.fullName && projectData.fullName.trim() !== '' ? ['fullName' as const] : []),
+      ...(projectData.companyName && projectData.companyName.trim() !== '' ? ['companyName' as const] : []),
+      ...(projectData.email && projectData.email.trim() !== '' ? ['email' as const] : []),
+      ...(projectData.phone && projectData.phone.trim() !== '' ? ['phone' as const] : []),
+      ...(projectData.country && projectData.country.trim() !== '' ? ['country' as const] : []),
     ];
 
-    fieldsToInclude.forEach(key => {
+    fieldsForWhatsAppMessage.forEach(key => {
         const value = projectData[key];
-        if (value && String(value).trim() !== '') {
-            message += `*${formatLabel(key)}:* ${formatValue(key, value)}\n`;
-        }
+        // The conditional spreading ensures value is present, not null/undefined, and not just whitespace
+        message += `*${formatLabel(key)}:* ${formatValue(key, value)}\n`;
     });
     
+    // Idea and Refined Idea (handled separately as they are longer free text)
     if (projectData.idea && projectData.idea.trim() !== '') {
         message += `*${formatLabel('idea')}:* ${projectData.idea}\n`;
     }
