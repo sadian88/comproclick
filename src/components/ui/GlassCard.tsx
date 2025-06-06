@@ -11,8 +11,8 @@ export default function GlassCard({ children, className, innerClassName }: Glass
   return (
     <div
       className={cn(
-        "rounded-xl shadow-xl overflow-hidden", // Removed border classes
-        "bg-[hsl(var(--color-blanco-puro))/0.2] dark:bg-[hsl(var(--card))/0.25]", // Slightly adjusted dark mode transparency
+        "rounded-xl shadow-xl overflow-hidden border-0", // Added border-0 to remove any inherited borders
+        "bg-[hsl(var(--color-blanco-puro))/0.2] dark:bg-[hsl(var(--card))/0.25]", 
         "backdrop-blur-lg saturate-150",
         className
       )}

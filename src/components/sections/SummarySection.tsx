@@ -95,6 +95,10 @@ export default function SummarySection({ projectData, onPrev, onClearData }: Sum
     'fullName', 'companyName', 'email', 'phone', 'country', 'idea'
   ];
 
+  const summaryItemBaseClass = "p-4 backdrop-blur-md rounded-lg shadow-lg border-0";
+  const summaryItemTextClass = "text-foreground";
+  const summaryItemLabelClass = "font-semibold text-primary";
+
   return (
     <GlassCard className="w-full max-w-3xl mx-auto my-12">
       <div className="text-center mb-8">
@@ -103,27 +107,31 @@ export default function SummarySection({ projectData, onPrev, onClearData }: Sum
         <p className="text-muted-foreground mt-2">Revisa los detalles de tu solicitud antes de enviarla.</p>
       </div>
       
-      <div className="space-y-3 mb-8"> {/* Reduced space-y for tighter packing without borders */}
+      <div className="space-y-4 mb-8">
         {displayOrder.map((key) => {
           const value = projectData[key];
 
           if (key === 'projectTypeOther' && projectData.projectType !== 'other') return null;
           if (key === 'projectCategoryOther' && projectData.projectCategory !== 'other') return null;
+          
+          // Skip empty optional fields unless it's the main idea field (which can be empty but shown if no refined idea)
+          if (key !== 'idea' && (!value || String(value).trim() === '')) return null;
+
 
           if (key === 'idea' && value && String(value).trim() !== '') {
              return (
-              <div key={key} className="p-3 bg-background/30 dark:bg-black/10 rounded-md shadow-sm">
-                <span className="font-semibold text-primary">{formatLabel(key)}:</span>
-                <p className="text-foreground whitespace-pre-wrap pl-2 pt-1">{formatValue(key, value as string)}</p>
+              <div key={key} className={cn(summaryItemBaseClass, "bg-[hsl(var(--color-blanco-puro))]/10 dark:bg-[hsl(var(--card))]/10")}>
+                <span className={summaryItemLabelClass}>{formatLabel(key)}:</span>
+                <p className={cn(summaryItemTextClass, "whitespace-pre-wrap pl-2 pt-1")}>{formatValue(key, value as string)}</p>
               </div>
             );
           }
           
           if (key !== 'idea' && value && String(value).trim() !== '') {
             return (
-              <div key={key} className="p-3 bg-background/30 dark:bg-black/10 rounded-md shadow-sm">
-                <span className="font-semibold text-primary">{formatLabel(key)}:</span>
-                <p className="text-foreground whitespace-pre-wrap pl-2 pt-1">{formatValue(key, value as string)}</p>
+              <div key={key} className={cn(summaryItemBaseClass, "bg-[hsl(var(--color-blanco-puro))]/10 dark:bg-[hsl(var(--card))]/10")}>
+                <span className={summaryItemLabelClass}>{formatLabel(key)}:</span>
+                <p className={cn(summaryItemTextClass, "whitespace-pre-wrap pl-2 pt-1")}>{formatValue(key, value as string)}</p>
               </div>
             );
           }
@@ -131,9 +139,9 @@ export default function SummarySection({ projectData, onPrev, onClearData }: Sum
         })}
 
         {projectData.refinedIdea && projectData.refinedIdea.trim() !== '' && projectData.refinedIdea !== projectData.idea && (
-          <div key="refinedIdea" className="p-3 bg-accent/10 dark:bg-accent/5 rounded-md shadow-sm">
+          <div key="refinedIdea" className={cn(summaryItemBaseClass, "bg-accent/10 dark:bg-accent/15")}>
             <span className="font-semibold text-accent">{formatLabel('refinedIdea')}:</span>
-            <p className="text-foreground whitespace-pre-wrap pl-2 pt-1">{projectData.refinedIdea}</p>
+            <p className={cn(summaryItemTextClass, "whitespace-pre-wrap pl-2 pt-1")}>{projectData.refinedIdea}</p>
           </div>
         )}
       </div>
