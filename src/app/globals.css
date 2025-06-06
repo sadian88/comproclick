@@ -87,9 +87,11 @@
   * {
     @apply border-border;
   }
+  html {
+    cursor: crosshair; /* Technological cursor */
+  }
   body {
     @apply bg-background text-foreground;
-    /* Removed complex background-image layers for a simpler, lighter background */
     background-attachment: fixed;
     background-size: cover;
     background-repeat: no-repeat;
